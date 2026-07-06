@@ -1,0 +1,64 @@
+/* If you're using Tailwind, keep these at the top */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global font + base styles */
+:root {
+  /* Hacker-style main font */
+  font-family: "Share Tech Mono", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+
+  /* 🔥 Bigger global font size (was 17px) */
+  font-size: 18px;
+
+  color-scheme: light;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: "Share Tech Mono", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  font-size: 1rem; /* 1rem now = 18px */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f1f5f9; /* slate-100 */
+  color: #020617; /* slate-950 */
+}
+
+/* Code blocks / inline code */
+code {
+  font-family: "Share Tech Mono", SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+}
+
+/* Optional: nicer scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #e2e8f0; /* slate-200 */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #94a3b8; /* slate-400 */
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #64748b; /* slate-500 */
+}

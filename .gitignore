@@ -1,0 +1,49 @@
+# IDEs and System files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+.claude/
+
+# Python Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+
+# Python Caches & Build Files
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# Frontend Node Modules & Production Build
+node_modules/
+**/node_modules/
+edusmartai-frontend/build/
+edusmartai-frontend/dist/
+
+# Databases
+*.db
+backend/edusmart.db
+
+# Environment Variables
+.env
+backend/.env
+edusmartai-frontend/.env
+.env.local
+.env.*.local
+
+# Large Datasets (Blockers)
+Training_Data/studentVle.csv
+
+# Uploaded files
+backend/uploads/course_*
+backend/uploads/student_files/user_*
+backend/uploads/materials/*
