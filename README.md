@@ -299,7 +299,8 @@ Stated honestly so the implemented scope is clear:
 - **Accessibility (WCAG 2.2 AA) and a full product/UX redesign were NOT completed** — the UI is functional and consistent but has not had a formal a11y audit or visual redesign.
 - **Semester dates are not seeded.** The migration creates a `Fall 2024` semester without start/end dates; an admin can set them via the Semesters page.
 - **File-Based Database:** SQLite (`edusmart.db`), for local execution and demonstration, not high-concurrency production.
-- **Submitted assessment files have no download endpoint yet** (the open static mount was removed for security; only course *materials* have a protected download route).
+- Uploaded files are served **only** through authenticated, ownership-checked, traversal-safe endpoints (`GET /files/{id}/download` for course materials, `GET /submissions/{id}/download` for assessment submissions). There is no open static mount.
+- Records created by automated E2E runs are flagged `is_test_data` rather than deleted, so demo data is never mistaken for real academic records.
 - **Dataset Exclusion:** the raw OULAD `studentVle.csv` (~454 MB) is excluded; download manually to retrain.
 - **Model version pinning:** models were trained with scikit-learn **1.7.2**; `requirements.txt` matches. AXI runtime uses argmax while the training notebook experimented with a P(H)≥threshold rule (a documented decision-policy difference, not a feature mismatch).
 - **Test Coverage:** 37 backend tests (auth/IDOR, admin/lecturer CRUD, data-protection, quiz/assessment engine, ML golden, chatbot eval). `pip-audit` and automated security-review diff extraction fail on non-ASCII paths — run them in CI or an ASCII path.

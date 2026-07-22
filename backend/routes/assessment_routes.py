@@ -7,10 +7,12 @@ from pathlib import Path
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from database import get_db
 from auth import get_current_user, get_lecturer
+from routes.file_routes import _resolve_within_uploads  # traversal-safe resolver
 import models
 import schemas
 
@@ -161,6 +163,47 @@ def submit_assessment(assessment_id: int, data: schemas.AssessmentSubmit, curren
         ))
     db.commit()
     return {"message": "Submitted"}
+
+
+@student_router.get("/submissions/{submission_id}/download")
+def download_submission(
+    submission_id: int,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Download a submitted file.
+
+    Authorized to exactly two parties: the student who submitted it, and the
+    lecturer who owns the assessment's course. Path is traversal-checked.
+    """
+    sub = db.query(models.Submission).filter(models.Submission.id == submission_id).first()
+    if not sub:
+        raise HTTPException(status_code=404, detail="Submission not found")
+
+    if current_user.role == "student":
+        if sub.student_id != current_user.id:
+            raise HTTPException(status_code=403, detail="Not your submission")
+    elif current_user.role == "lecturer":
+        assessment = db.query(models.Assessment).filter(
+            models.Assessment.id == sub.assessment_id
+        ).first()
+        owns = assessment and db.query(models.Course).filter(
+            models.Course.id == assessment.course_id,
+            models.Course.lecturer_id == current_user.id,
+        ).first()
+        if not owns:
+            raise HTTPException(status_code=403, detail="You don't teach this course")
+    else:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    safe_path = _resolve_within_uploads(sub.file_url)
+    if not safe_path:
+        raise HTTPException(status_code=404, detail="File not found on server")
+
+    return FileResponse(
+        path=str(safe_path), filename=safe_path.name,
+        media_type="application/octet-stream",
+    )
 
 
 # ---------------- Generic authenticated upload ----------------

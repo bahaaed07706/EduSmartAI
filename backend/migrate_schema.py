@@ -90,6 +90,10 @@ def _add_columns(cur) -> None:
 
     _add_column(cur, "course_materials", "files_json", "files_json TEXT")
 
+    # quizzes table only exists after the ORM tables are created (first run may skip)
+    if cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='quizzes'").fetchone():
+        _add_column(cur, "quizzes", "is_test_data", "is_test_data INTEGER DEFAULT 0")
+
 
 def _ensure_departments(cur) -> dict[str, int]:
     """Create Department rows from distinct legacy strings; return name->id map."""

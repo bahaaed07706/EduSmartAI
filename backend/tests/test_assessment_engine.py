@@ -56,6 +56,33 @@ def test_assessment_authorization(client, lecturers, students, courses, enrollme
                        json={"file_url": "/uploads/y.pdf"}, headers=auth_headers(students[1])).status_code == 403
 
 
+def test_submission_download_authorization(client, lecturers, students, courses, enrollments, auth_headers):
+    """Only the submitting student and the owning lecturer may download a file.
+
+    The fixture's file never exists on disk, so an *authorized* caller gets 404
+    (file missing) while an *unauthorized* caller must get 403 — the distinction
+    proves authorization runs before any file access.
+    """
+    aid = _create_assessment(client, lecturers[0], courses[0], auth_headers)
+    client.post(f"/api/v1/assessments/{aid}/submit",
+                json={"file_url": "/uploads/submissions/user_201/x.pdf"},
+                headers=auth_headers(students[0]))
+    sub_id = client.get(f"/api/v1/lecturers/assessments/{aid}/submissions",
+                        headers=auth_headers(lecturers[0])).json()[0]["id"]
+
+    # Unauthorized: a different student, and a lecturer who doesn't own the course.
+    assert client.get(f"/api/v1/submissions/{sub_id}/download",
+                      headers=auth_headers(students[1])).status_code == 403
+    assert client.get(f"/api/v1/submissions/{sub_id}/download",
+                      headers=auth_headers(lecturers[1])).status_code == 403
+
+    # Authorized: owner student and owning lecturer pass authz (404 = file absent).
+    assert client.get(f"/api/v1/submissions/{sub_id}/download",
+                      headers=auth_headers(students[0])).status_code == 404
+    assert client.get(f"/api/v1/submissions/{sub_id}/download",
+                      headers=auth_headers(lecturers[0])).status_code == 404
+
+
 def test_grade_out_of_range_and_delete_with_submissions(client, lecturers, students, courses, enrollments, auth_headers):
     aid = _create_assessment(client, lecturers[0], courses[0], auth_headers)
     lh = auth_headers(lecturers[0])

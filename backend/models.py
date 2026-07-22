@@ -270,6 +270,9 @@ class Quiz(Base):
     file_url = Column(String(500), nullable=True)
     created_by = Column(Integer, ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime, server_default=func.now())
+    # Marks records created by automated E2E runs. Kept (never hard-deleted) but
+    # excluded from student-facing lists so demo data is not mistaken for real.
+    is_test_data = Column(Integer, default=0, nullable=False)
 
     questions = relationship(
         "QuizQuestion", back_populates="quiz",

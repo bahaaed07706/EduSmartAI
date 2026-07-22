@@ -104,6 +104,7 @@ def list_course_quizzes(course_id: int, current_user: models.User = Depends(get_
             "id": q.id, "title": q.title, "description": q.description,
             "start_date": _iso(q.start_date), "end_date": _iso(q.end_date),
             "duration_minutes": q.duration_minutes, "max_marks": _quiz_marks(q),
+            "is_test_data": bool(getattr(q, "is_test_data", 0)),
         }
         for q in quizzes
     ]
