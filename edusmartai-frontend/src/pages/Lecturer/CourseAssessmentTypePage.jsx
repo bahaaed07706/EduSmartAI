@@ -612,7 +612,7 @@ const CourseAssessmentTypePage = ({
                             </div>
                           </div>
                         ) : (
-                          <span className="text-slate-400">—</span>
+                          <span className="text-slate-500">—</span>
                         )}
                       </td>
                       <td className="py-2 px-3 text-right whitespace-nowrap space-x-1">
@@ -725,7 +725,7 @@ const CourseAssessmentTypePage = ({
                             </div>
                           </div>
                         ) : (
-                          <span className="text-slate-400">No file</span>
+                          <span className="text-slate-500">No file</span>
                         )}
                       </td>
                       <td className="py-2 px-3">{sub.submitted_at || "-"}</td>
@@ -756,7 +756,7 @@ const CourseAssessmentTypePage = ({
                   <tr>
                     <td
                       colSpan={6}
-                      className="py-4 px-3 text-center text-sm text-slate-400"
+                      className="py-4 px-3 text-center text-sm text-slate-500"
                     >
                       No submissions yet.
                     </td>

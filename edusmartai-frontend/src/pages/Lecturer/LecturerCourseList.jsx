@@ -286,7 +286,7 @@ const LecturerCourseList = () => {
               </div>
             </>
           ) : (
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-slate-500">
               No semesters found for your account.
             </span>
           )}
@@ -391,7 +391,7 @@ const LecturerCourseList = () => {
 
                 {/* Actions */}
                 <div className="mt-4 flex items-center justify-between gap-2 border-t border-dashed border-slate-200 pt-3">
-                  <div className="flex items-center gap-1 text-[11px] text-slate-400">
+                  <div className="flex items-center gap-1 text-[11px] text-slate-500">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                     <span>Teaching course</span>
                   </div>

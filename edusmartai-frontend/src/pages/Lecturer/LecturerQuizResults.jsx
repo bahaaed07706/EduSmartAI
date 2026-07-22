@@ -89,7 +89,7 @@ const LecturerQuizResults = () => {
       <div className="min-h-[calc(100vh-64px)] bg-gradient-to-b from-slate-50 via-slate-50 to-slate-100 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm">
-            <Gauge className="h-5 w-5 animate-spin text-slate-400" />
+            <Gauge className="h-5 w-5 animate-spin text-slate-500" />
           </div>
           <p className="text-sm text-slate-500">
             Loading quiz analytics and results...
@@ -155,7 +155,7 @@ const LecturerQuizResults = () => {
                 <span>
                   Course #{courseId} · Quiz ID {quizId}
                 </span>
-                <span className="hidden md:inline-flex items-center gap-1 text-[11px] text-slate-400">
+                <span className="hidden md:inline-flex items-center gap-1 text-[11px] text-slate-500">
                   <HelpCircle className="h-3 w-3" />
                   Overview of student performance and question difficulty.
                 </span>
@@ -186,21 +186,21 @@ const LecturerQuizResults = () => {
               <p className="text-2xl font-semibold text-slate-900">
                 {max_marks}
               </p>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-slate-500">
                 Maximum possible score for this quiz.
               </p>
             </div>
           </Card>
 
           <Card className="bg-slate-900 text-slate-50 border-none shadow-md">
-            <p className="text-[11px] uppercase tracking-wide text-slate-400 flex items-center gap-1 mb-1">
+            <p className="text-[11px] uppercase tracking-wide text-slate-300 flex items-center gap-1 mb-1">
               <Gauge className="h-3.5 w-3.5" />
               Average Score
             </p>
             <p className="text-2xl font-semibold">
               {average_score != null ? average_score.toFixed(2) : "—"}
             </p>
-            <p className="mt-1 text-[11px] text-slate-400">
+            <p className="mt-1 text-[11px] text-slate-300">
               {averagePercent != null
                 ? `${averagePercent.toFixed(1)}% of max marks`
                 : "Average percentage not available."}
@@ -215,7 +215,7 @@ const LecturerQuizResults = () => {
             <p className="text-2xl font-semibold text-slate-900">
               {min_score != null ? min_score : "—"}
             </p>
-            <p className="mt-1 text-[11px] text-slate-400">
+            <p className="mt-1 text-[11px] text-slate-500">
               Lowest score achieved among attempts.
             </p>
           </Card>
@@ -228,7 +228,7 @@ const LecturerQuizResults = () => {
             <p className="text-2xl font-semibold text-slate-900">
               {max_score != null ? max_score : "—"}
             </p>
-            <p className="mt-1 text-[11px] text-slate-400">
+            <p className="mt-1 text-[11px] text-slate-500">
               Highest score achieved among attempts.
             </p>
           </Card>
@@ -300,7 +300,7 @@ const LecturerQuizResults = () => {
                 <p className="text-sm font-semibold text-slate-900">
                   {lowCount}
                 </p>
-                <p className="text-[11px] text-slate-400">
+                <p className="text-[11px] text-slate-500">
                   Scores below 50% of max marks.
                 </p>
               </div>
@@ -377,7 +377,7 @@ const LecturerQuizResults = () => {
                                 {percent.toFixed(1)}%
                               </span>
                             ) : (
-                              <span className="text-[11px] text-slate-400">
+                              <span className="text-[11px] text-slate-500">
                                 No score yet
                               </span>
                             )}

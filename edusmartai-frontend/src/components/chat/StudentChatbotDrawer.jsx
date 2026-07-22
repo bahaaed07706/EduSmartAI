@@ -220,7 +220,7 @@ const StudentChatbotDrawer = () => {
             placeholder="Ask about your courses, grades, attendance, or how to improve..."
           />
           <div className="flex items-center justify-between gap-2">
-            <p className="text-[10px] text-slate-400">
+            <p className="text-[10px] text-slate-500">
               Enter to send, Shift+Enter for a new line.
             </p>
             <Button size="sm" onClick={sendMessage} disabled={loading}>

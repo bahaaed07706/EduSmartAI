@@ -289,7 +289,7 @@ const LecturerCourseDetails = () => {
                       <span>{s.final_grade}</span>
                     </span>
                   ) : (
-                    <span className="text-[11px] text-slate-400">—</span>
+                    <span className="text-[11px] text-slate-500">—</span>
                   )}
                 </td>
               </tr>
@@ -298,12 +298,12 @@ const LecturerCourseDetails = () => {
               <tr>
                 <td
                   colSpan={4}
-                  className="px-3 py-6 text-center text-sm text-slate-400"
+                  className="px-3 py-6 text-center text-sm text-slate-500"
                 >
                   <div className="flex flex-col items-center gap-1">
                     <span className="text-lg">📭</span>
                     <span>No students enrolled yet.</span>
-                    <span className="text-[11px] text-slate-400">
+                    <span className="text-[11px] text-slate-500">
                       Once students register for this course, they will appear
                       here.
                     </span>

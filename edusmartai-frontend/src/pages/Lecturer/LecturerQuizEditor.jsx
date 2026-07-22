@@ -355,7 +355,7 @@ const LecturerQuizEditor = () => {
       <div className="min-h-[calc(100vh-64px)] bg-gradient-to-b from-slate-50 via-slate-50 to-slate-100 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm">
-            <Clock className="h-5 w-5 animate-spin text-slate-400" />
+            <Clock className="h-5 w-5 animate-spin text-slate-500" />
           </div>
           <p className="text-sm text-slate-500">
             Loading quiz builder for you...
@@ -403,7 +403,7 @@ const LecturerQuizEditor = () => {
                 <span>
                   Course #{courseId} · Quiz ID {quizId}
                 </span>
-                <span className="hidden md:inline-flex items-center gap-1 text-[11px] text-slate-400">
+                <span className="hidden md:inline-flex items-center gap-1 text-[11px] text-slate-500">
                   <HelpCircle className="h-3 w-3" />
                   Manage questions, options, and marks for this quiz.
                 </span>
@@ -488,7 +488,7 @@ const LecturerQuizEditor = () => {
           </Card>
 
           <Card className="bg-slate-900 text-slate-50 border-none shadow-md">
-            <p className="text-[11px] uppercase tracking-wide text-slate-400 mb-2">
+            <p className="text-[11px] uppercase tracking-wide text-slate-300 mb-2">
               Quick stats
             </p>
             <div className="space-y-3 text-sm">
@@ -510,7 +510,7 @@ const LecturerQuizEditor = () => {
                   {totalMarks}
                 </span>
               </div>
-              <div className="mt-3 text-[11px] text-slate-400 leading-relaxed">
+              <div className="mt-3 text-[11px] text-slate-300 leading-relaxed">
                 Tip: Keep the total marks close to the quiz{" "}
                 <span className="font-semibold text-slate-100">
                   Max Marks ({quiz.max_marks})
@@ -575,7 +575,7 @@ const LecturerQuizEditor = () => {
                     onChange={(e) => setNewQuestionMarks(e.target.value)}
                     required
                   />
-                  <p className="mt-1 text-[11px] text-slate-400">
+                  <p className="mt-1 text-[11px] text-slate-500">
                     Fractional marks are allowed (e.g. 0.5).
                   </p>
                 </div>
@@ -800,7 +800,7 @@ const QuestionCard = ({
                 className="prose prose-sm max-w-none text-slate-800"
                 dangerouslySetInnerHTML={{ __html: questionHtml }}
               />
-              <p className="mt-1 text-[11px] text-slate-400">
+              <p className="mt-1 text-[11px] text-slate-500">
                 Question ID {question.id}
               </p>
             </>

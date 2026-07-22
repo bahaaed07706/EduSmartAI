@@ -224,7 +224,7 @@ const AdminStudents = () => {
           </label>
           <div className="relative">
             <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
-              <Search className="h-3.5 w-3.5 text-slate-400" />
+              <Search className="h-3.5 w-3.5 text-slate-500" />
             </span>
             <input
               type="text"
@@ -303,7 +303,7 @@ const AdminStudents = () => {
                           {Number(s.gpa).toFixed(2)}
                         </span>
                       ) : (
-                        <span className="text-slate-400">--</span>
+                        <span className="text-slate-500">--</span>
                       )}
                     </td>
                     <td className="whitespace-nowrap px-3 py-2 text-slate-700">

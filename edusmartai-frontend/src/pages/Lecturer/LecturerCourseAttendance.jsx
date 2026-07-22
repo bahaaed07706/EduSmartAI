@@ -376,7 +376,7 @@ const LecturerCourseAttendance = () => {
                     </option>
                   ))}
                 </select>
-                <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-400 text-xs">
+                <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-500 text-xs">
                   ▼
                 </span>
               </div>
@@ -396,7 +396,7 @@ const LecturerCourseAttendance = () => {
               </div>
             )}
             {loadingDay && (
-              <span className="mt-1 text-[11px] text-slate-400">
+              <span className="mt-1 text-[11px] text-slate-500">
                 Loading statuses for this date...
               </span>
             )}
@@ -474,7 +474,7 @@ const LecturerCourseAttendance = () => {
                 <tr>
                   <td
                     colSpan={3}
-                    className="py-4 text-center text-sm text-slate-400"
+                    className="py-4 text-center text-sm text-slate-500"
                   >
                     No students enrolled.
                   </td>
@@ -548,7 +548,7 @@ const LecturerCourseAttendance = () => {
                 <tr>
                   <td
                     colSpan={7}
-                    className="py-4 text-center text-sm text-slate-400"
+                    className="py-4 text-center text-sm text-slate-500"
                   >
                     No students enrolled.
                   </td>

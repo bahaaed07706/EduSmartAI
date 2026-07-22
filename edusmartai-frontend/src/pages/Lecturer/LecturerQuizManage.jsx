@@ -262,7 +262,7 @@ const LecturerQuizManage = () => {
       <div className="min-h-[calc(100vh-64px)] flex items-center justify-center bg-gradient-to-b from-slate-50 via-slate-50 to-slate-100">
         <div className="flex flex-col items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm">
-            <Clock className="h-5 w-5 animate-spin text-slate-400" />
+            <Clock className="h-5 w-5 animate-spin text-slate-500" />
           </div>
           <p className="text-sm text-slate-500">Loading quiz details...</p>
         </div>

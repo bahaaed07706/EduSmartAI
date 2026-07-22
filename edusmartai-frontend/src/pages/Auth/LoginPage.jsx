@@ -111,7 +111,7 @@ const LoginPage = () => {
             {loading ? "Logging in..." : "Login"}
           </Button>
 
-          <p className="text-[10px] text-slate-400 text-center mt-2">
+          <p className="text-[10px] text-slate-500 text-center mt-2">
             Use your university email and password. Contact support if you forget
             your credentials.
           </p>

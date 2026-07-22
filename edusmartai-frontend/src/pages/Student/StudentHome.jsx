@@ -359,7 +359,7 @@ const StudentHome = () => {
               <p className="mt-1 text-2xl font-semibold text-primary">
                 {profile?.gpa != null ? Number(profile.gpa).toFixed(2) : "--"}
               </p>
-              <p className="mt-1 text-[11px] text-slate-400">
+              <p className="mt-1 text-[11px] text-slate-500">
                 Overall GPA in the system.
               </p>
             </div>
@@ -379,7 +379,7 @@ const StudentHome = () => {
               <p className="mt-1 text-base font-semibold text-slate-900">
                 {currentSemesterLabel}
               </p>
-              <p className="mt-1 text-[11px] text-slate-400">
+              <p className="mt-1 text-[11px] text-slate-500">
                 Active semester linked to your enrollments.
               </p>
             </div>
@@ -399,7 +399,7 @@ const StudentHome = () => {
               <p className="mt-1 text-2xl font-semibold text-slate-900">
                 {activeCoursesCount}
               </p>
-              <p className="mt-1 text-[11px] text-slate-400">
+              <p className="mt-1 text-[11px] text-slate-500">
                 Enrolled for the selected semester.
               </p>
             </div>
@@ -474,7 +474,7 @@ const StudentHome = () => {
 
                       {departmentName && (
                         <div className="flex items-center gap-1.5 text-[11px] text-slate-600">
-                          <Building2 className="h-3.5 w-3.5 text-slate-400" />
+                          <Building2 className="h-3.5 w-3.5 text-slate-500" />
                           <span className="font-medium">Department:</span>
                           <span className="truncate">{departmentName}</span>
                         </div>

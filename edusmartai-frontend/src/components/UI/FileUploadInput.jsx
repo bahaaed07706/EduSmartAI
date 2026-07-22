@@ -115,7 +115,7 @@ const FileUploadInput = ({
 
         <div className="text-center">
           <p className="text-[11px] text-slate-600">{helperText}</p>
-          <p className="mt-1 text-[11px] text-slate-400">
+          <p className="mt-1 text-[11px] text-slate-500">
             {uploading
               ? "Uploading..."
               : "Supported: PDF, Word, PPT, images, ZIP"}

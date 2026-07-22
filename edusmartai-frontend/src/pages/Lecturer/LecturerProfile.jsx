@@ -376,7 +376,7 @@ const LecturerProfile = () => {
                             </span>
                           </div>
                         ) : (
-                          <span className="text-[11px] text-slate-400">
+                          <span className="text-[11px] text-slate-500">
                             Not scheduled
                           </span>
                         )}
@@ -388,12 +388,12 @@ const LecturerProfile = () => {
                     <tr>
                       <td
                         colSpan={4}
-                        className="py-6 text-center text-sm text-slate-400"
+                        className="py-6 text-center text-sm text-slate-500"
                       >
                         <div className="flex flex-col items-center gap-1">
                           <span className="text-lg">📭</span>
                           <span>No courses assigned yet.</span>
-                          <span className="text-[11px] text-slate-400">
+                          <span className="text-[11px] text-slate-500">
                             Once you are assigned to courses, they will appear
                             here automatically.
                           </span>

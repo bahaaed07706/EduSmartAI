@@ -126,7 +126,7 @@ const InformationPanel = ({
 
             {/* Footer - for Power BI connection info */}
             <div className="px-4 py-2 bg-slate-50 border-t border-slate-100">
-                <p className="text-[10px] text-slate-400 flex items-center gap-1">
+                <p className="text-[10px] text-slate-500 flex items-center gap-1">
                     <BarChart3 className="h-3 w-3" />
                     Ready for Power BI integration
                     {externalUrl && (

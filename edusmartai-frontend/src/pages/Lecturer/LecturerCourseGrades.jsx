@@ -473,7 +473,7 @@ const LecturerCourseGrades = () => {
                             <span>count: {row.assess_count}</span>
                           </div>
                         ) : (
-                          <span className="text-[11px] text-slate-400">
+                          <span className="text-[11px] text-slate-500">
                             No assessment stats yet
                           </span>
                         )}

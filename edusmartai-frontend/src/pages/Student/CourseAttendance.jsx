@@ -127,7 +127,7 @@ const CourseAttendance = () => {
                 <tr>
                   <td
                     colSpan={2}
-                    className="py-2 text-center text-slate-400"
+                    className="py-2 text-center text-slate-500"
                   >
                     No attendance records yet.
                   </td>

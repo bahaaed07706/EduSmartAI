@@ -124,7 +124,7 @@ const ProfilePage = () => {
               👤
             </span>
             Profile{" "}
-            <span className="text-slate-400 text-base">(الملف الشخصي)</span>
+            <span className="text-slate-500 text-base">(الملف الشخصي)</span>
           </h2>
           <p className="mt-1 text-sm text-slate-500">
             View your personal and academic information in one place.
@@ -244,7 +244,7 @@ const ProfilePage = () => {
                   {selectedSemesterLabel || "All semesters (no filter)"}
                 </span>
               </p>
-              <p className="text-[11px] text-slate-400 mt-1">
+              <p className="text-[11px] text-slate-500 mt-1">
                 You can change this from the dashboard header to quickly switch
                 between semesters.
               </p>

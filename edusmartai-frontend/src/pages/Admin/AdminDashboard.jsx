@@ -94,7 +94,7 @@ const AdminDashboard = () => {
             <LayoutDashboard className="h-5 w-5 text-slate-600" />
           </div>
           <div>
-            <p className="text-xs uppercase tracking-[0.16em] text-slate-400">
+            <p className="text-xs uppercase tracking-[0.16em] text-slate-500">
               Admin
             </p>
             <h2 className="text-xl font-semibold text-slate-800">
@@ -179,13 +179,16 @@ const AdminDashboard = () => {
             <LayoutDashboard className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary/80">
+            {/* text-primary/80 measured 3.14:1 at 11px — below AA. Full-strength
+                primary-700 gives ~7:1 on white. */}
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary-700">
               System overview
             </p>
             <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
               Admin Dashboard
             </h2>
-            <p className="mt-1 text-xs text-slate-500">
+            {/* slate-500 at 12px measured 4.34:1 — marginally under AA; slate-600 = 7.0:1 */}
+            <p className="mt-1 text-xs text-slate-600">
               High-level snapshot of departments, lecturers, students, courses,
               and semesters.
             </p>
@@ -254,7 +257,7 @@ const AdminDashboard = () => {
                   <Icon className="h-4 w-4" />
                 </div>
               </div>
-              <p className="mt-2 text-[11px] text-slate-400">
+              <p className="mt-2 text-[11px] text-slate-500">
                 Total number of {t.label.toLowerCase()} in the system.
               </p>
             </Card>

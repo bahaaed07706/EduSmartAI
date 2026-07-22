@@ -72,7 +72,7 @@ const StudentCourseMaterials = () => {
                     {material.title}
                   </h2>
                   {material.uploaded_at && (
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-slate-500">
                       Uploaded{" "}
                       {new Date(material.uploaded_at).toLocaleString()}
                     </p>
@@ -107,7 +107,7 @@ const StudentCourseMaterials = () => {
                                 {file.file_name}
                               </span>
                             </span>
-                            <span className="text-[10px] text-slate-400">
+                            <span className="text-[10px] text-slate-500">
                               Download
                             </span>
                           </a>
@@ -115,7 +115,7 @@ const StudentCourseMaterials = () => {
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-slate-500">
                       No files attached.
                     </p>
                   )}

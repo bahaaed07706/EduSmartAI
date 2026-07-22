@@ -251,7 +251,7 @@ const AdminLecturers = () => {
               View all lecturers, their departments, and contact details.
             </p>
           </div>
-          <p className="text-[11px] text-slate-400">
+          <p className="text-[11px] text-slate-500">
             {lecturers.length} lecturers
           </p>
         </div>
@@ -298,7 +298,7 @@ const AdminLecturers = () => {
                 <tr>
                   <td
                     colSpan={6}
-                    className="py-4 px-3 text-center text-xs text-slate-400"
+                    className="py-4 px-3 text-center text-xs text-slate-500"
                   >
                     No lecturers found. Use{" "}
                     <span className="font-medium">New Lecturer</span> to add
@@ -387,7 +387,7 @@ const AdminLecturers = () => {
                   type="button"
                   onClick={closeFormModal}
                   disabled={saving}
-                  className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                  className="rounded-full p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -415,7 +415,7 @@ const AdminLecturers = () => {
                     }
                     placeholder="e.g. LEC123"
                     disabled={!!editing}
-                    prefixIcon={<IdCard className="h-4 w-4 text-slate-400" />}
+                    prefixIcon={<IdCard className="h-4 w-4 text-slate-500" />}
                   />
                   <Input
                     label="Full Name"
@@ -439,7 +439,7 @@ const AdminLecturers = () => {
                       setForm((f) => ({ ...f, email: e.target.value }))
                     }
                     placeholder="lecturer@example.edu"
-                    prefixIcon={<Mail className="h-4 w-4 text-slate-400" />}
+                    prefixIcon={<Mail className="h-4 w-4 text-slate-500" />}
                   />
                   <div>
                     <label className="text-xs font-medium text-slate-700 flex items-center gap-1">
@@ -463,7 +463,7 @@ const AdminLecturers = () => {
                         </option>
                       ))}
                     </select>
-                    <p className="mt-1 text-[11px] text-slate-400">
+                    <p className="mt-1 text-[11px] text-slate-500">
                       Choose which department this lecturer belongs to.
                     </p>
                   </div>
@@ -489,7 +489,7 @@ const AdminLecturers = () => {
                         : "Leave blank to use default: Lecturer123"
                     }
                   />
-                  <p className="mt-1 text-[11px] text-slate-400">
+                  <p className="mt-1 text-[11px] text-slate-500">
                     {editing
                       ? "If left empty, the lecturer's password will not change."
                       : "If left empty, the system will set the default password: Lecturer123."}

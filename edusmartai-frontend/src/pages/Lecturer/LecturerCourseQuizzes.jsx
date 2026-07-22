@@ -312,7 +312,7 @@ const LecturerCourseQuizzes = () => {
 
         <div className="flex flex-col items-end gap-2">
           <div className="flex items-center gap-2 text-xs text-slate-500">
-            <CalendarDays className="h-3.5 w-3.5 text-slate-400" />
+            <CalendarDays className="h-3.5 w-3.5 text-slate-500" />
             <span>
               Open quizzes:{" "}
               <span className="font-semibold text-slate-800">
@@ -349,7 +349,7 @@ const LecturerCourseQuizzes = () => {
               </p>
             </div>
             <div className="flex items-center gap-2 text-[11px] text-slate-500">
-              <Timer className="h-3.5 w-3.5 text-slate-400" />
+              <Timer className="h-3.5 w-3.5 text-slate-500" />
               <span>
                 Leave duration empty for{" "}
                 <span className="font-semibold">no time limit</span>.
@@ -649,7 +649,7 @@ const LecturerCourseQuizzes = () => {
                       </td>
                       <td className="py-2 px-3 align-top text-[11px] text-slate-600">
                         <div>{formatDateTime(quiz.start_date)}</div>
-                        <div className="text-slate-400">to</div>
+                        <div className="text-slate-500">to</div>
                         <div>{formatDateTime(quiz.end_date)}</div>
                       </td>
                       <td className="py-2 px-3 align-top text-xs text-slate-700">
