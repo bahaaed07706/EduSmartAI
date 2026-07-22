@@ -156,6 +156,12 @@ EduSmartAI/
 
 The prediction subsystem consists of two pre-trained Random Forest models serialized with `joblib` and loaded during FastAPI backend initialization (`main.py` lifespan handler).
 
+> **Measured performance and caveats: [`docs/ml-evaluation.md`](docs/ml-evaluation.md).**
+> Held-out results — AXI: accuracy 0.792, ROC-AUC 0.922 (n=96). OULAD: accuracy 0.979,
+> ROC-AUC 0.994 (n=2,811) — **but the OULAD figure is inflated by target leakage**
+> (`Pass_rate` encodes course completion), so it must **not** be presented as
+> early-warning accuracy. Reproduce with `python scripts/evaluate_models.py`.
+
 ### 1. OULAD Model — Student Risk Prediction
 
 Predicts whether a student is likely to pass or fail a course based on Virtual Learning Environment (VLE) interaction and non-exam assessment data.

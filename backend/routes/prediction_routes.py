@@ -269,13 +269,18 @@ def predict_for_student(
         features = models.StudentFeature(student_id=student_id, course_id=course_id)
         db.add(features)
     
-    # 3. Dynamic Calculation of Features (The Fix)
-    
-    # A. Calculate Days_Active & Sum_Click from StudentVle
-    # This addresses "Fix Days_Active calculation ... use studentVle"
+    # 3. Dynamic Calculation of Features
+
+    # A. Calculate Days_Active & Sum_Click from StudentVle.
+    # TRAINING PARITY: the OULAD notebook defines
+    #     Days_Active = ('date', 'max')     -- the LAST active study-day index
+    # NOT the count of distinct active days. Using COUNT(DISTINCT date) here
+    # produced a large training/serving skew (training mean 177.3 vs runtime
+    # mean 61.9 on the OULAD data) on the model's highest-importance feature.
+    # See docs/ml-evaluation.md.
     from sqlalchemy import func
     vle_stats = db.query(
-        func.count(func.distinct(models.StudentVle.date)).label('days_active'),
+        func.max(models.StudentVle.date).label('days_active'),
         func.sum(models.StudentVle.sum_click).label('total_clicks')
     ).filter(
         models.StudentVle.student_id == student_id,
