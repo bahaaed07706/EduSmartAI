@@ -98,6 +98,15 @@ def pytest_unconfigure(config) -> None:
     _restore_process_state()
 
 
+@pytest.fixture(autouse=True)
+def _reset_rag_index():
+    """The material index is process-cached; clear it around every test so an
+    index built from one test's database can never leak into another."""
+    chatbot_routes.reset_rag_index()
+    yield
+    chatbot_routes.reset_rag_index()
+
+
 @pytest.fixture
 def session_factory():
     """Create a fresh single-connection SQLite database for every test."""
