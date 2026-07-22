@@ -201,7 +201,7 @@ const LecturerCourseList = () => {
       <div className="space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold tracking-[0.16em] text-primary/80 uppercase">
+            <p className="text-xs font-semibold tracking-[0.16em] text-primary-700 uppercase">
               Lecturer workspace
             </p>
             <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
@@ -243,7 +243,7 @@ const LecturerCourseList = () => {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold tracking-[0.16em] text-primary/80 uppercase">
+          <p className="text-xs font-semibold tracking-[0.16em] text-primary-700 uppercase">
             Lecturer workspace
           </p>
           <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">

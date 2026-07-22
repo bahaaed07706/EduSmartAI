@@ -334,27 +334,27 @@ const ProfilePage = () => {
           </div>
 
           <dl className="space-y-3 text-sm">
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col gap-0.5 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
               <dt className="text-slate-500">Full Name</dt>
-              <dd className="font-medium text-slate-800 text-right">
+              <dd className="font-medium text-slate-800 sm:text-right">
                 {profile.name}
               </dd>
             </div>
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col gap-0.5 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
               <dt className="text-slate-500">Student Number</dt>
-              <dd className="font-mono text-xs sm:text-sm font-semibold text-slate-900 text-right">
+              <dd className="font-mono text-xs sm:text-sm font-semibold text-slate-900 sm:text-right">
                 {profile.student_number}
               </dd>
             </div>
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col gap-0.5 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
               <dt className="text-slate-500">Email</dt>
-              <dd className="text-right break-all text-slate-800">
+              <dd className="sm:text-right break-all text-slate-800">
                 {profile.email}
               </dd>
             </div>
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col gap-0.5 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
               <dt className="text-slate-500">Gender</dt>
-              <dd className="text-right text-slate-800">{displayGender}</dd>
+              <dd className="sm:text-right text-slate-800">{displayGender}</dd>
             </div>
           </dl>
         </Card>
@@ -371,29 +371,29 @@ const ProfilePage = () => {
           </div>
 
           <dl className="space-y-3 text-sm">
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col gap-0.5 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
               <dt className="text-slate-500">GPA</dt>
-              <dd className="text-right font-semibold text-indigo-600">
+              <dd className="sm:text-right font-semibold text-indigo-600">
                 {displayGpa}
               </dd>
             </div>
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col gap-0.5 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
               <dt className="text-slate-500">Department</dt>
-              <dd className="text-right text-slate-800">
+              <dd className="sm:text-right text-slate-800">
                 {departmentLabel}
               </dd>
             </div>
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col gap-0.5 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
               <dt className="text-slate-500">
                 Highest Education (أعلى مؤهل)
               </dt>
-              <dd className="text-right text-slate-800">
+              <dd className="sm:text-right text-slate-800">
                 {profile.highest_education || "--"}
               </dd>
             </div>
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col gap-0.5 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
               <dt className="text-slate-500">System Semester</dt>
-              <dd className="text-right text-slate-800">
+              <dd className="sm:text-right text-slate-800">
                 {semester?.name || "--"}
               </dd>
             </div>

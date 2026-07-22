@@ -275,7 +275,7 @@ const StudentHome = () => {
               <GraduationCap className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-primary/80 font-semibold">
+              <p className="text-xs uppercase tracking-[0.16em] text-primary-700 font-semibold">
                 Welcome back
               </p>
               <h1 className="mt-1 text-xl sm:text-2xl font-semibold text-slate-900">
@@ -291,7 +291,9 @@ const StudentHome = () => {
               {/* Semester filter UI */}
               {semesters.length > 0 && (
                 <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <span className="text-[11px] text-slate-500">
+                  {/* slate-500 on this tinted panel measured 4.34:1 at 11px,
+                      marginally under AA; slate-600 clears it. */}
+                  <span className="text-[11px] text-slate-600">
                     Showing courses for:
                   </span>
                   <select
@@ -462,7 +464,7 @@ const StudentHome = () => {
                             <BookOpen className="h-4 w-4 text-primary" />
                           </div>
                           <div>
-                            <p className="text-[10px] font-semibold text-primary/80 tracking-[0.12em] uppercase">
+                            <p className="text-[10px] font-semibold text-primary-700 tracking-[0.12em] uppercase">
                               {courseCode}
                             </p>
                             <p className="text-sm font-semibold text-slate-900 line-clamp-2">

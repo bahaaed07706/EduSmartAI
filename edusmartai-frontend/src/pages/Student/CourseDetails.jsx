@@ -1102,7 +1102,7 @@ const CourseDetails = () => {
               <BookOpen className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <p className="text-xs uppercase tracking-wide text-primary/70 font-semibold">
+              <p className="text-xs uppercase tracking-wide text-primary-700 font-semibold">
                 {course.course_code}
               </p>
               <h2 className="text-2xl md:text-3xl font-semibold text-slate-900">

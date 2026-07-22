@@ -179,7 +179,7 @@ const AdminDashboard = () => {
             <LayoutDashboard className="h-5 w-5 text-primary" />
           </div>
           <div>
-            {/* text-primary/80 measured 3.14:1 at 11px — below AA. Full-strength
+            {/* text-primary-700 measured 3.14:1 at 11px — below AA. Full-strength
                 primary-700 gives ~7:1 on white. */}
             <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary-700">
               System overview

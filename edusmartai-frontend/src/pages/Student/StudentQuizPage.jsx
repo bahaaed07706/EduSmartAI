@@ -291,7 +291,7 @@ const StudentQuizPage = () => {
     return (
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div className="space-y-1">
-          <p className="text-xs uppercase tracking-wide text-primary/70 font-semibold">
+          <p className="text-xs uppercase tracking-wide text-primary-700 font-semibold">
             Quiz
           </p>
           <h1 className="text-2xl md:text-3xl font-semibold text-slate-900">

@@ -302,7 +302,7 @@ const MyCourses = () => {
                         <BookOpen className="h-4 w-4 text-primary" />
                       </div>
                       <div>
-                        <p className="text-[11px] font-semibold text-primary/80 tracking-[0.12em] uppercase">
+                        <p className="text-[11px] font-semibold text-primary-700 tracking-[0.12em] uppercase">
                           {courseCode}
                         </p>
                         <h3 className="text-sm sm:text-base font-semibold text-slate-900 line-clamp-2">

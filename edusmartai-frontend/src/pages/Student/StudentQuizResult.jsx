@@ -100,7 +100,7 @@ const StudentQuizResult = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="space-y-1">
-            <p className="text-xs uppercase tracking-wide text-primary/70 font-semibold">
+            <p className="text-xs uppercase tracking-wide text-primary-700 font-semibold">
               Quiz Result
             </p>
             <h1 className="text-2xl md:text-3xl font-semibold text-slate-900">
@@ -155,7 +155,7 @@ const StudentQuizResult = () => {
                       %
                     </div>
                     <div className="leading-tight">
-                      <p className="text-[11px] uppercase tracking-wide text-primary/80">
+                      <p className="text-[11px] uppercase tracking-wide text-primary-700">
                         Overall
                       </p>
                       <p className="text-sm font-semibold text-primary">

@@ -146,7 +146,7 @@ const StudentChatbotDrawer = () => {
         {/* header */}
         <div className="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
           <div>
-            <p className="text-xs uppercase tracking-wide text-primary/70 font-semibold">
+            <p className="text-xs uppercase tracking-wide text-primary-700 font-semibold">
               EduSmartAI Assistant
             </p>
             <p className="text-[11px] text-slate-500">

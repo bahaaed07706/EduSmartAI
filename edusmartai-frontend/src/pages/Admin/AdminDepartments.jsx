@@ -145,7 +145,7 @@ const AdminDepartments = () => {
             <Building2 className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary/80">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary-700">
               Admin · Structure
             </p>
             <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
