@@ -131,7 +131,6 @@ const LecturerQuizResults = () => {
     totalStudents,
     attemptedCount,
     highCount,
-    midCount,
     lowCount,
     averagePercent,
   } = derived;

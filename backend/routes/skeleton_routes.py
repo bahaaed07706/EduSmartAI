@@ -3,9 +3,8 @@
 Skeleton endpoints for features not yet fully implemented.
 Returns success responses to prevent frontend errors.
 """
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from typing import List, Optional
 from database import get_db
 from auth import get_current_user, get_admin, get_lecturer
 import models
@@ -71,17 +70,8 @@ def get_current_semester():
     return {"id": 2, "name": "Spring", "year": 2025, "is_current": True}
 
 
-# ============ Notifications ============
-@router.get("/notifications")
-def get_notifications(current_user: models.User = Depends(get_current_user)):
-    """Get notifications (placeholder)"""
-    return []
-
-
-@router.post("/notifications/{notif_id}/read")
-def mark_notification_read(notif_id: int, current_user: models.User = Depends(get_current_user)):
-    """Mark notification as read"""
-    return {"message": "Marked as read"}
+# NOTE: Notifications are now served by routes/notification_routes.py
+# (GET /notifications/me, PATCH /notifications/{id}/read, PATCH /notifications/mark-all-read).
 
 
 # ============ Assignments ============

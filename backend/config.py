@@ -4,7 +4,6 @@ Application configuration loaded from environment variables.
 All paths can be overridden via .env file.
 """
 import os
-import sys
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -16,9 +15,27 @@ load_dotenv(BASE_DIR / ".env")
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./edusmart.db")
 
 # ============ JWT Authentication ============
-JWT_SECRET = os.getenv("JWT_SECRET", "fallback-secret-key")
+JWT_SECRET = os.getenv("JWT_SECRET", "")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 JWT_EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRE_MINUTES", "1440"))
+
+# Reject missing, default, or weak secrets so the app never runs with a
+# guessable signing key. Known placeholders are blocked regardless of length.
+_INSECURE_JWT_SECRETS = {
+    "",
+    "fallback-secret-key",
+    "your-secret-key-change-in-production",
+    "changeme",
+    "secret",
+}
+_MIN_JWT_SECRET_LENGTH = 16
+
+if JWT_SECRET.strip() in _INSECURE_JWT_SECRETS or len(JWT_SECRET.strip()) < _MIN_JWT_SECRET_LENGTH:
+    raise RuntimeError(
+        "JWT_SECRET is missing, weak, or set to a default placeholder. "
+        f"Set a strong random JWT_SECRET (>= {_MIN_JWT_SECRET_LENGTH} chars) in backend/.env. "
+        "Generate one with: python -c \"import secrets; print(secrets.token_urlsafe(48))\""
+    )
 
 # ============ CORS ============
 CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
@@ -52,7 +69,7 @@ def _validate_model_paths():
             missing.append(f"  - {name}: {path}")
     
     if missing:
-        print(f"⚠️ Warning: Missing model files:\n" + "\n".join(missing))
+        print("⚠️ Warning: Missing model files:\n" + "\n".join(missing))
         print("  Set correct paths in .env or ensure files exist.")
 
 

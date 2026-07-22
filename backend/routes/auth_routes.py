@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from database import get_db
-from auth import hash_password, verify_password, create_access_token
+from auth import verify_password, create_access_token
 from schemas import LoginRequest, TokenResponse
 import models
 
@@ -18,6 +18,12 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password"
+        )
+
+    if getattr(user, "is_active", 1) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account is deactivated"
         )
     
     # إنشاء token

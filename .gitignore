@@ -47,3 +47,6 @@ Training_Data/studentVle.csv
 backend/uploads/course_*
 backend/uploads/student_files/user_*
 backend/uploads/materials/*
+
+# Local backups (never commit)
+_backup_*/

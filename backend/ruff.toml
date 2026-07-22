@@ -1,0 +1,11 @@
+# Ruff configuration for the EduSmartAI backend.
+# Focused on real-bug rules (not cosmetic noise): pyflakes (F), syntax (E9),
+# bare-except (E722), and a few high-signal bugbear/pyupgrade checks.
+line-length = 120
+target-version = "py312"
+extend-exclude = ["venv", "__pycache__"]
+
+[lint]
+select = ["F", "E9", "E722", "B006", "B008"]
+# B008 (function call in default arg) is intentional for FastAPI's Depends()/File().
+ignore = ["B008"]

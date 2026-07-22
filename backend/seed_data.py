@@ -413,7 +413,7 @@ def seed_all():
                         course_id=course.id,
                         title=f"مراجعة منتصف الفصل - {course.name}",
                         description="مراجعة شاملة للامتحان النصفي",
-                        content_text=f"مراجعة لجميع المواضيع حتى منتصف الفصل.",
+                        content_text="مراجعة لجميع المواضيع حتى منتصف الفصل.",
                         uploaded_by=course.lecturer_id or 1
                     )
                 ]
@@ -434,7 +434,7 @@ def seed_all():
         print("\n" + "="*50)
         print("🎉 COMPLETE DATA SEEDED SUCCESSFULLY!")
         print("="*50)
-        print(f"👤 Admin: 1")
+        print("👤 Admin: 1")
         print(f"👨‍🏫 Lecturers: {total_lecturers}")
         print(f"👨‍🎓 Students: {total_students}")
         print(f"📚 Courses: {total_courses}")

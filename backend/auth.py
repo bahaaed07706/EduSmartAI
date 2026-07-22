@@ -71,7 +71,14 @@ def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User not found"
         )
-    
+
+    # Deactivated (soft-deleted) users cannot use the API.
+    if getattr(user, "is_active", 1) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account is deactivated"
+        )
+
     return user
 
 

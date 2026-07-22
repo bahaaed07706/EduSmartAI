@@ -1,5 +1,5 @@
 # schemas.py - Pydantic models للـ API with validation
-from pydantic import BaseModel, EmailStr, field_validator
+from pydantic import BaseModel, field_validator
 from typing import Optional, List, Literal
 from datetime import date, datetime
 
@@ -265,6 +265,157 @@ class MaterialResponse(BaseModel):
     description: Optional[str]
     file_url: Optional[str]
     created_at: Optional[datetime]
-    
+
     class Config:
         from_attributes = True
+
+
+# ============ Admin: Department Schemas ============
+class DepartmentCreate(BaseModel):
+    department_id: str      # human code, e.g. "CS"
+    name: str
+
+
+# ============ Admin: Semester Schemas ============
+class SemesterCreate(BaseModel):
+    name: str
+    year: int
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
+
+
+# ============ Admin: Lecturer Schemas ============
+class AdminLecturerCreate(BaseModel):
+    lecturer_id: Optional[str] = None
+    name: str
+    email: str
+    department_id: Optional[int] = None
+    password: str
+
+
+class AdminLecturerUpdate(BaseModel):
+    name: str
+    email: str
+    department_id: Optional[int] = None
+    password: Optional[str] = None
+
+
+# ============ Admin: Student Schemas ============
+class AdminStudentCreate(BaseModel):
+    student_number: Optional[str] = None
+    name: str
+    email: str
+    gender: Optional[str] = None
+    department_id: Optional[int] = None
+    gpa: Optional[float] = None
+    region: Optional[str] = None
+    highest_education: Optional[str] = None
+    password: str
+
+
+class AdminStudentUpdate(BaseModel):
+    student_number: Optional[str] = None
+    name: str
+    email: str
+    gender: Optional[str] = None
+    department_id: Optional[int] = None
+    gpa: Optional[float] = None
+    region: Optional[str] = None
+    highest_education: Optional[str] = None
+
+
+# ============ Admin: Course Schemas ============
+class AdminCourseCreate(BaseModel):
+    course_code: str
+    name: str
+    department_id: Optional[int] = None
+    lecturer_id: Optional[int] = None
+    semester_id: Optional[int] = None
+    days_and_times: Optional[str] = None
+
+
+# ============ Admin: Enrollment Schemas ============
+class AdminEnrollmentCreate(BaseModel):
+    student_id: int
+    semester_id: Optional[int] = None
+
+
+# ============ Lecturer: Grade Summary ============
+class GradeSummaryUpdate(BaseModel):
+    mid_grade: Optional[float] = None
+    participation_grade: Optional[float] = None
+    final_exam_grade: Optional[float] = None
+
+
+# ============ Quiz engine ============
+class QuizCreate(BaseModel):
+    title: str
+    description: Optional[str] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    duration_minutes: Optional[int] = None
+    max_marks: Optional[float] = 0.0
+    weight_from_participation: Optional[float] = 0.0
+    file_url: Optional[str] = None
+
+
+class QuizOptionCreate(BaseModel):
+    option_text: str
+    is_correct: bool = False
+
+
+class QuizQuestionCreate(BaseModel):
+    question_text: str
+    marks: Optional[float] = 1.0
+    options: List[QuizOptionCreate] = []
+
+
+class QuizQuestionUpdate(BaseModel):
+    question_text: Optional[str] = None
+    marks: Optional[float] = None
+
+
+class QuizOptionUpdate(BaseModel):
+    option_text: Optional[str] = None
+    is_correct: Optional[bool] = None
+
+
+class QuizAnswerSave(BaseModel):
+    question_id: int
+    selected_option_id: int
+
+
+# ============ Assessment engine ============
+class AssessmentCreate(BaseModel):
+    type: str = "assignment"           # assignment | project | quiz
+    title: str
+    description: Optional[str] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    max_marks: Optional[float] = 100.0
+    weight_from_participation: Optional[float] = 0.0
+    file_url: Optional[str] = None
+
+
+class AssessmentGrade(BaseModel):
+    student_id: int
+    marks_obtained: float
+    feedback: Optional[str] = None
+
+
+class AssessmentSubmit(BaseModel):
+    file_url: str
+
+
+# ============ Course materials (multi-file) ============
+class MaterialFileIn(BaseModel):
+    file_name: str
+    file_url: str
+    file_size_bytes: Optional[int] = None
+    content_type: Optional[str] = None
+
+
+class MaterialCreateMulti(BaseModel):
+    title: str
+    description: Optional[str] = ""
+    files: List[MaterialFileIn] = []

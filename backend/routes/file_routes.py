@@ -6,9 +6,9 @@ Real File Upload System:
 3. Content stored for RAG chatbot
 """
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from typing import Optional
-import os
 import shutil
 from datetime import datetime
 from pathlib import Path
@@ -18,9 +18,28 @@ import models
 
 router = APIRouter(prefix="/files", tags=["Files"])
 
-# Upload directory
-UPLOAD_DIR = Path(__file__).parent.parent / "uploads"
-UPLOAD_DIR.mkdir(exist_ok=True)
+# Upload directory (resolved once so we can validate paths stay inside it)
+UPLOAD_DIR = (Path(__file__).parent.parent / "uploads").resolve()
+
+
+def _resolve_within_uploads(stored_path: str) -> Optional[Path]:
+    """Resolve a stored file path and confirm it stays inside UPLOAD_DIR.
+
+    Guards against path traversal: any resolved path that escapes the uploads
+    root (e.g. via ``..`` or an absolute path from another location) is rejected.
+    Returns the safe Path, or None if the file is missing/outside the root.
+    """
+    if not stored_path:
+        return None
+    try:
+        candidate = Path(stored_path)
+        if not candidate.is_absolute():
+            candidate = UPLOAD_DIR / candidate
+        candidate = candidate.resolve()
+        candidate.relative_to(UPLOAD_DIR)  # raises ValueError if outside
+    except (ValueError, OSError):
+        return None
+    return candidate if candidate.is_file() else None
 
 # Allowed file types
 ALLOWED_EXTENSIONS = {".pdf", ".docx", ".doc", ".txt", ".pptx", ".xlsx"}
@@ -122,7 +141,7 @@ async def upload_course_material(
     
     # Create course folder
     course_folder = UPLOAD_DIR / f"course_{course_id}"
-    course_folder.mkdir(exist_ok=True)
+    course_folder.mkdir(parents=True, exist_ok=True)
     
     # Generate unique filename
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -204,6 +223,49 @@ def get_course_files(
     ]
 
 
+@router.get("/{material_id}/download")
+def download_material(
+    material_id: int,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Download a course material file (enrolled students or owning lecturer only)."""
+
+    material = db.query(models.CourseMaterial).filter(
+        models.CourseMaterial.id == material_id
+    ).first()
+    if not material:
+        raise HTTPException(status_code=404, detail="Material not found")
+
+    # Access control: student must be enrolled; lecturer must own the course.
+    if current_user.role == "student":
+        enrollment = db.query(models.Enrollment).filter(
+            models.Enrollment.student_id == current_user.id,
+            models.Enrollment.course_id == material.course_id
+        ).first()
+        if not enrollment:
+            raise HTTPException(status_code=403, detail="Not enrolled in this course")
+    elif current_user.role == "lecturer":
+        course = db.query(models.Course).filter(
+            models.Course.id == material.course_id,
+            models.Course.lecturer_id == current_user.id
+        ).first()
+        if not course:
+            raise HTTPException(status_code=403, detail="You don't teach this course")
+    else:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    safe_path = _resolve_within_uploads(material.file_url)
+    if not safe_path:
+        raise HTTPException(status_code=404, detail="File not found on server")
+
+    return FileResponse(
+        path=str(safe_path),
+        filename=safe_path.name,
+        media_type="application/octet-stream"
+    )
+
+
 @router.delete("/{material_id}")
 def delete_material(
     material_id: int,
@@ -228,15 +290,17 @@ def delete_material(
     if not course:
         raise HTTPException(status_code=403, detail="You don't own this material")
     
-    # Delete file from disk
-    if material.file_url and Path(material.file_url).exists():
+    # Delete file from disk (only if it resolves safely inside the uploads root)
+    safe_path = _resolve_within_uploads(material.file_url)
+    if safe_path:
         try:
-            Path(material.file_url).unlink()
-        except:
-            pass
-    
+            safe_path.unlink()
+        except OSError as e:
+            # Do not fail the request if the file is already gone; log for ops.
+            print(f"[files] failed to delete file for material {material_id}: {type(e).__name__}")
+
     # Delete from database
     db.delete(material)
     db.commit()
-    
+
     return {"message": "Material deleted"}

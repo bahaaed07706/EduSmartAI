@@ -1,12 +1,11 @@
 # main.py - التطبيق الرئيسي
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 from pathlib import Path
 from config import CORS_ORIGINS
 from database import init_db
-from routes import auth_routes, student_routes, lecturer_routes, admin_routes, prediction_routes, chatbot_routes, file_routes, skeleton_routes
+from routes import auth_routes, student_routes, lecturer_routes, admin_routes, admin_crud_routes, prediction_routes, chatbot_routes, file_routes, notification_routes, quiz_routes, assessment_routes, skeleton_routes
 
 
 @asynccontextmanager
@@ -48,19 +47,25 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Static files for uploads
-uploads_path = Path(__file__).parent / "uploads"
-if uploads_path.exists():
-    app.mount("/uploads", StaticFiles(directory=str(uploads_path)), name="uploads")
+# NOTE: Uploaded files are intentionally NOT served via an open static mount.
+# They contain course materials and student submissions and must only be
+# reachable through the authenticated, ownership-checked download endpoint in
+# routes/file_routes.py (GET /api/v1/files/{material_id}/download).
 
 # تسجيل المسارات الأساسية
 app.include_router(auth_routes.router, prefix="/api/v1")
 app.include_router(student_routes.router, prefix="/api/v1")
 app.include_router(lecturer_routes.router, prefix="/api/v1")
 app.include_router(admin_routes.router, prefix="/api/v1")
+app.include_router(admin_crud_routes.router, prefix="/api/v1")
 app.include_router(prediction_routes.router, prefix="/api/v1")
 app.include_router(chatbot_routes.router, prefix="/api/v1")
 app.include_router(file_routes.router, prefix="/api/v1")
+app.include_router(notification_routes.router, prefix="/api/v1")
+app.include_router(quiz_routes.router, prefix="/api/v1")
+app.include_router(quiz_routes.student_router, prefix="/api/v1")
+app.include_router(assessment_routes.router, prefix="/api/v1")
+app.include_router(assessment_routes.student_router, prefix="/api/v1")
 app.include_router(skeleton_routes.router, prefix="/api/v1")
 
 
