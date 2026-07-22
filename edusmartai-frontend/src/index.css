@@ -1,17 +1,74 @@
-/* If you're using Tailwind, keep these at the top */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Global font + base styles */
+/* ============================================================================
+   EduSmartAI — Design Tokens
+   ----------------------------------------------------------------------------
+   Direction: "academic records system — data legibility first".
+   The product is a bilingual (AR/EN) university platform whose core surfaces are
+   dense tables of grades, attendance and risk indicators.
+
+   Two deliberate decisions:
+   1. Prose uses a humanist sans with strong Arabic coverage (Segoe UI on Windows
+      renders Arabic well). The previous global monospace ("Share Tech Mono") had
+      no Arabic glyphs, so Arabic fell back inconsistently and long records were
+      hard to scan.
+   2. Monospace is RETAINED, but scoped to NUMERIC DATA only (.font-tabular).
+      That keeps a trace of the original identity and does real work: grade and
+      score columns align digit-for-digit. This is the signature element.
+   ========================================================================== */
+
 :root {
-  /* Hacker-style main font */
-  font-family: "Share Tech Mono", system-ui, -apple-system, BlinkMacSystemFont,
-    "Segoe UI", sans-serif;
+  /* ---- Brand + semantic colour -------------------------------------- */
+  /* Anchor kept from the original build for continuity. */
+  --color-primary-50: #eef7fb;
+  --color-primary-100: #d5eaf3;
+  --color-primary-300: #7fbcd7;
+  --color-primary-500: #217aa3; /* brand anchor */
+  --color-primary-600: #1b6485;
+  --color-primary-700: #154e68;
 
-  /* 🔥 Bigger global font size (was 17px) */
-  font-size: 18px;
+  /* Neutral ramp (slate-based) */
+  --color-surface: #ffffff;
+  --color-canvas: #f1f5f9;
+  --color-border: #e2e8f0;
+  --color-border-strong: #cbd5e1;
+  --color-muted: #64748b; /* 4.76:1 on white — AA for body text */
+  --color-text: #0f172a; /* 16.1:1 on white */
 
+  /* Status — all foreground values verified ≥4.5:1 on their tint */
+  --color-success: #15803d;
+  --color-success-bg: #f0fdf4;
+  --color-warning: #a16207;
+  --color-warning-bg: #fefce8;
+  --color-danger: #b91c1c;
+  --color-danger-bg: #fef2f2;
+  --color-info: #1d4ed8;
+  --color-info-bg: #eff6ff;
+
+  /* ---- Typography ---------------------------------------------------- */
+  --font-sans: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont,
+    "Noto Sans Arabic", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "Share Tech Mono", SFMono-Regular, Menlo, Consolas,
+    "Liberation Mono", monospace;
+
+  /* ---- Spacing / shape / elevation ----------------------------------- */
+  --space-unit: 0.25rem; /* 4px base scale */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04),
+    0 8px 24px rgba(15, 23, 42, 0.06);
+  --shadow-overlay: 0 20px 50px rgba(15, 23, 42, 0.18);
+
+  /* ---- Focus (WCAG 2.2 — focus must be clearly visible) -------------- */
+  --focus-ring: 0 0 0 2px #ffffff, 0 0 0 4px var(--color-primary-500);
+
+  /* 16px base: 18px made dense tables overflow at 360px. */
+  font-size: 16px;
+  font-family: var(--font-sans);
   color-scheme: light;
 }
 
@@ -29,36 +86,87 @@ body,
 
 body {
   margin: 0;
-  font-family: "Share Tech Mono", system-ui, -apple-system, BlinkMacSystemFont,
-    "Segoe UI", sans-serif;
-  font-size: 1rem; /* 1rem now = 18px */
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f1f5f9; /* slate-100 */
-  color: #020617; /* slate-950 */
+  background-color: var(--color-canvas);
+  color: var(--color-text);
 }
 
-/* Code blocks / inline code */
-code {
-  font-family: "Share Tech Mono", SFMono-Regular, Menlo, Monaco, Consolas,
-    "Liberation Mono", "Courier New", monospace;
+/* Numeric data: monospace + tabular figures so columns align. */
+.font-tabular,
+td.numeric,
+th.numeric {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
 }
 
-/* Optional: nicer scrollbars */
+code,
+pre {
+  font-family: var(--font-mono);
+}
+
+/* ---- Focus visibility (applies app-wide, keyboard users only) -------- */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-sm);
+}
+
+/* ---- Skip link: first tab stop, WCAG 2.4.1 bypass blocks ------------- */
+.skip-link {
+  position: absolute;
+  inset-inline-start: 0.5rem;
+  top: -3rem;
+  z-index: 100;
+  padding: 0.5rem 1rem;
+  background: var(--color-primary-500);
+  color: #fff;
+  border-radius: var(--radius-md);
+  transition: top 0.15s ease-in-out;
+}
+.skip-link:focus {
+  top: 0.5rem;
+}
+
+/* ---- RTL: use logical properties so layout mirrors automatically ----- */
+[dir="rtl"] .flip-on-rtl {
+  transform: scaleX(-1);
+}
+
+/* Wide content (tables) must scroll inside its own container, never the page. */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Respect users who ask for reduced motion (WCAG 2.3.3). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---- Scrollbars ------------------------------------------------------ */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
-
 ::-webkit-scrollbar-track {
-  background: #e2e8f0; /* slate-200 */
+  background: var(--color-border);
 }
-
 ::-webkit-scrollbar-thumb {
-  background: #94a3b8; /* slate-400 */
+  background: #94a3b8;
   border-radius: 999px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  background: #64748b; /* slate-500 */
+  background: var(--color-muted);
 }
