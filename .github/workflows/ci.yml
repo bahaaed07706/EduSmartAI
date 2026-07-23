@@ -40,8 +40,15 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          # Must match the Node/npm that generated package-lock.json. On Node 18
+          # the older npm resolves a different dependency tree and `npm ci`
+          # fails with "Missing: yaml@... from lock file".
+          node-version: "24"
       - name: Install dependencies
+        env:
+          # puppeteer is a devDependency used only by scripts/a11y-audit.js,
+          # which CI does not run. Skip the ~150MB Chromium download.
+          PUPPETEER_SKIP_DOWNLOAD: "true"
         run: npm ci
       - name: Production build
         env:
