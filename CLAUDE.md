@@ -3,6 +3,37 @@
 > This file is the single source of truth for every teammate (human or agent).
 > Read it before touching the repo. Update it when facts change.
 
+## 0. Start here — live state
+
+**`docs/current-state.md` is the authoritative snapshot.** Read it first; it
+carries the branch, remote SHA, commit list, review dispositions, verification
+results, blockers, and the exact next task. This file holds the durable rules;
+that file holds the changing facts.
+
+At the last verification (2026-07-24):
+- Branch `release/v1-hardening`, HEAD == remote == `abf747c`, tree clean.
+- PR #1 open to `main`, **CI green**, not merged.
+- 94 backend tests pass on Windows *and* ubuntu-latest; ruff clean; build compiles.
+- All 10 code-review findings fixed in `0f567e6`.
+- Deployment decided (Render) in `docs/deployment-decision.md`, **not executed**.
+
+### Compact instructions
+
+When compacting this session, always preserve:
+- Current branch, HEAD, and confirmed **remote** SHA.
+- Completed vs. remaining tasks, and the exact next action.
+- Agent file ownership (§8) — no two agents edit one file.
+- Test, build, a11y and audit results **with their numbers**.
+- Data-protection decisions (§5) and why each was made.
+- RAG and ML limitations — especially that **OULAD 97.9% is leakage-inflated**
+  and is never to be presented as reliable early prediction.
+- GitHub PR and CI status.
+- The prohibitions: no force push, no `reset --hard`, no history rewrite, no
+  deleting data or secrets.
+
+Discard: superseded plans, resolved exploration, repeated command logs, and
+failed attempts that were already corrected.
+
 ## 1. Project purpose & target users
 EduSmartAI is an AI-assisted educational management platform (graduation project,
 portfolio-grade). Three roles:
