@@ -312,7 +312,7 @@ const LecturerCourseAttendance = () => {
                 ? `${courseMeta.course_code} – ${courseMeta.name} – Attendance`
                 : "Attendance"}
             </h2>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-600">
               Mark attendance for each session and track overall presence for
               your students across the semester.
             </p>
@@ -350,7 +350,7 @@ const LecturerCourseAttendance = () => {
             <CheckCircle2 className="h-4 w-4 text-primary" />
             Mark Attendance
           </h3>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-slate-600">
             Choose a scheduled class session, then set each student&apos;s
             status. Existing records are pre-filled and can be updated at any
             time.

@@ -114,7 +114,7 @@ const NotificationDropdown = ({
               <p className="text-sm font-medium text-slate-800">
                 No notifications yet
               </p>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-slate-600">
                 When something important happens in your courses, it will show
                 up here.
               </p>

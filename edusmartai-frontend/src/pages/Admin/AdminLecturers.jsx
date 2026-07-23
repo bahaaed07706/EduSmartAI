@@ -200,7 +200,7 @@ const AdminLecturers = () => {
             <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
               Lecturers
             </h2>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-600">
               Manage lecturer accounts, departments, and login credentials.
             </p>
           </div>

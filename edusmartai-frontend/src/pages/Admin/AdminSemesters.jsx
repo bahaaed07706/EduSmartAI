@@ -176,7 +176,7 @@ const AdminSemesters = () => {
             <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
               Semesters
             </h2>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-600">
               Configure academic semesters with names, years, and date ranges.
             </p>
           </div>

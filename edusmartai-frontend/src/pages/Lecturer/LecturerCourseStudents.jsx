@@ -192,7 +192,7 @@ const LecturerCourseStudents = () => {
                     <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
                         طلاب المقرر مع التنبؤات الذكية
                     </h2>
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-xs text-slate-600">
                         أدخل خصائص الطالب (OULAD + AXI) واحصل على نتائج التنبؤ
                     </p>
                 </div>

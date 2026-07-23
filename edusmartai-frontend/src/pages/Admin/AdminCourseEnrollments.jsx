@@ -202,7 +202,7 @@ const AdminCourseEnrollments = () => {
             <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
               {course.course_code} – {course.name}
             </h2>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-600">
               {headerSubtitle} •{" "}
               {course.department_name || `Dept #${course.department_id}`}
             </p>

@@ -1109,7 +1109,7 @@ const CourseDetails = () => {
                 {course.name}
               </h2>
               {course.lecturer_name && (
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs text-slate-600">
                   Taught by{" "}
                   <span className="font-medium">{course.lecturer_name}</span>
                 </p>

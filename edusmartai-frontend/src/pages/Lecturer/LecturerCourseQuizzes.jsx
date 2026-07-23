@@ -303,7 +303,7 @@ const LecturerCourseQuizzes = () => {
                 {totalQuizzes} quiz{totalQuizzes !== 1 ? "zes" : ""}
               </span>
             </h2>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-600">
               Create and manage online quizzes, control availability windows,
               and navigate to questions &amp; results.
             </p>
@@ -593,7 +593,7 @@ const LecturerCourseQuizzes = () => {
               <p className="text-sm font-medium text-slate-800">
                 No quizzes created yet
               </p>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-slate-600">
                 Start by creating a quiz using the button above. Students will
                 see it in their course once it is within the open window.
               </p>

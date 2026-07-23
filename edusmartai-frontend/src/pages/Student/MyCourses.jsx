@@ -260,7 +260,7 @@ const MyCourses = () => {
               <p className="text-sm font-semibold text-slate-800">
                 No courses to show
               </p>
-              <p className="mt-1 text-xs text-slate-500 max-w-md">
+              <p className="mt-1 text-xs text-slate-600 max-w-md">
                 You don’t have any courses in the selected semester or matching
                 your search. Try clearing the search, or choose a different
                 semester from your dashboard.

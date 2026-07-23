@@ -309,7 +309,7 @@ const LecturerQuizManage = () => {
               <p className="text-sm font-medium text-slate-700">
                 No questions yet
               </p>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-slate-600">
                 Use the form below to add your first question to this quiz.
               </p>
             </div>

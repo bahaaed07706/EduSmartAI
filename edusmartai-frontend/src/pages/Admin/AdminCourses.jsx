@@ -326,7 +326,7 @@ const AdminCourses = () => {
             <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
               Courses
             </h2>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-600">
               Create and manage courses, assign lecturers, link semesters, and
               configure weekly schedules.
             </p>

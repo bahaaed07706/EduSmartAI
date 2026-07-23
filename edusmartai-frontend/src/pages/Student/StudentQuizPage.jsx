@@ -331,7 +331,7 @@ const StudentQuizPage = () => {
           This quiz is currently{" "}
           <span className="font-semibold">{summary.status}</span>.
         </p>
-        <p className="mt-1 text-xs text-slate-500">
+        <p className="mt-1 text-xs text-slate-600">
           You will be able to access it once it becomes active.
         </p>
       </Card>

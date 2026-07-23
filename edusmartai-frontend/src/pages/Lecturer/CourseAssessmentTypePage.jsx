@@ -428,7 +428,7 @@ const CourseAssessmentTypePage = ({
                 <span>{stats.total} total</span>
               </span>
             </h2>
-            <p className="mt-1 text-xs text-slate-500">{pageDescription}</p>
+            <p className="mt-1 text-xs text-slate-600">{pageDescription}</p>
 
             <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-slate-500">
               {stats.avgMaxMarks && (
@@ -536,7 +536,7 @@ const CourseAssessmentTypePage = ({
               <p className="text-sm font-medium text-slate-800">
                 No {pluralLabel.toLowerCase()} yet
               </p>
-              <p className="mt-1 text-xs text-slate-500">{emptyStateText}</p>
+              <p className="mt-1 text-xs text-slate-600">{emptyStateText}</p>
             </div>
             <Button size="sm" onClick={() => setCreateOpen(true)}>
               <PlusCircle className="mr-1 h-4 w-4" />
@@ -661,7 +661,7 @@ const CourseAssessmentTypePage = ({
                 <ClipboardList className="h-4 w-4 text-emerald-600" />
                 Submissions – {selectedAssessmentSubmissions.assessment.title}
               </h3>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-slate-600">
                 Click <span className="font-medium">Grade / update</span> to
                 enter or modify marks and feedback.
               </p>

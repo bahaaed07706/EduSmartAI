@@ -240,7 +240,7 @@ const LecturerCourseDetails = () => {
             <span className="text-base">👥</span>
             <span>Students in course</span>
           </h3>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-slate-600">
             Full roster of students registered in this course.
           </p>
         </div>
@@ -331,7 +331,7 @@ const LecturerCourseDetails = () => {
             <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
               {courseTitle}
             </h2>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-600">
               Manage assessments, attendance, materials and students from a
               single view.
             </p>

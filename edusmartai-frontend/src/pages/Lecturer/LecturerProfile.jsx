@@ -312,7 +312,7 @@ const LecturerProfile = () => {
                   <span className="text-base">📚</span>
                   <h3>My Courses</h3>
                 </div>
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs text-slate-600">
                   A quick view of the courses you are teaching this semester.
                 </p>
               </div>

@@ -166,7 +166,7 @@ const AdminStudents = () => {
             <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
               Students Management
             </h1>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-600">
               View, search, add, edit, and delete student records.
             </p>
 
@@ -241,7 +241,11 @@ const AdminStudents = () => {
             <Filter className="h-3 w-3" />
             Department
           </label>
+          {/* axe select-name: the visible <label> was not associated with this
+              control, so it had no accessible name. */}
           <select
+            id="student-department-filter"
+            aria-label="Filter students by department"
             className="w-full rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-1.5 text-sm focus:border-primary focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary/40"
             value={departmentFilter}
             onChange={(e) => setDepartmentFilter(e.target.value)}

@@ -275,7 +275,7 @@ const LecturerCourseGrades = () => {
             <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
               {course.name} – Grades
             </h2>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-600">
               Enter <span className="font-semibold">midterm ({MAX_MID})</span>,{" "}
               <span className="font-semibold">
                 participation ({MAX_PARTICIPATION})

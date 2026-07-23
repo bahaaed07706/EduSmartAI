@@ -276,12 +276,14 @@ const StudentQuizResult = () => {
                         </div>
                       </div>
                       <div className="flex flex-col items-end gap-1 text-[11px] font-semibold">
+                        {/* axe: white on emerald-600 measured 3.76:1 at 11px.
+                            emerald-700 = 5.48:1, rose-700 = 5.94:1 — both AA. */}
                         {isCorrect ? (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-600 text-white">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-700 text-white">
                             Correct
                           </span>
                         ) : (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-rose-600 text-white">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-rose-700 text-white">
                             Incorrect
                           </span>
                         )}

@@ -296,7 +296,9 @@ const StudentHome = () => {
                   <span className="text-[11px] text-slate-600">
                     Showing courses for:
                   </span>
+                  {/* axe select-name: adjacent text is not a programmatic label. */}
                   <select
+                    aria-label="Filter courses by semester"
                     className="text-xs border border-slate-200 rounded-full px-3 py-1 bg-white/80 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     value={selectedSemesterId || ""}
                     onChange={handleSemesterChange}
