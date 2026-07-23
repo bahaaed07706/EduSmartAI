@@ -108,6 +108,38 @@ def _reset_rag_index():
 
 
 @pytest.fixture
+def uploaded_submission():
+    """Factory: create a real file in a user's own submissions folder.
+
+    Call as ``uploaded_submission(user_id)`` to get ``(stored_url, bytes)``.
+    The URL shape matches exactly what ``POST /files/upload`` returns — including
+    the ``user_{id}`` segment that ``submit_assessment`` requires — so the
+    upload/submit/download path is exercised end to end on whichever OS the
+    suite runs on. Files are removed afterwards; no real upload is touched.
+    """
+    from routes.file_routes import UPLOAD_DIR
+
+    created = []
+
+    def _make(user_id, name="submission-fixture.txt", payload=b"synthetic submission content"):
+        folder = UPLOAD_DIR / "submissions" / f"user_{user_id}"
+        folder.mkdir(parents=True, exist_ok=True)
+        target = folder / name
+        target.write_bytes(payload)
+        created.append((target, folder))
+        return f"/uploads/submissions/user_{user_id}/{name}", payload
+
+    yield _make
+
+    for target, folder in created:
+        try:
+            target.unlink()
+            folder.rmdir()
+        except OSError:
+            pass
+
+
+@pytest.fixture
 def session_factory():
     """Create a fresh single-connection SQLite database for every test."""
     engine = create_engine(

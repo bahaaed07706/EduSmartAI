@@ -28,6 +28,36 @@ def _iso(dt: Optional[datetime]) -> Optional[str]:
     return dt.isoformat() if dt else None
 
 
+VALID_ASSESSMENT_TYPES = {"assignment", "project", "quiz"}
+
+
+def _submission_prefix(user_id: int) -> str:
+    """The only upload location a given user's submissions may live in."""
+    return f"/uploads/submissions/user_{user_id}/"
+
+
+def _validate_own_upload(file_url: str, user_id: int) -> str:
+    """Reject a submitted file_url that the caller did not upload.
+
+    `file_url` is raw client input. Containment inside the uploads root is not
+    enough on its own: without this check a student could submit a path
+    belonging to course materials or to another student's folder and then read
+    it back through the authorized download endpoint.
+    """
+    if not file_url or not isinstance(file_url, str):
+        raise HTTPException(status_code=422, detail="A submitted file is required")
+    normalized = file_url.replace("\\", "/").strip()
+    if not normalized.startswith(_submission_prefix(user_id)):
+        raise HTTPException(
+            status_code=422,
+            detail="file_url must reference a file you uploaded via /files/upload",
+        )
+    # No traversal segments may survive the prefix check.
+    if ".." in normalized.split("/"):
+        raise HTTPException(status_code=422, detail="Invalid file reference")
+    return normalized
+
+
 def _owned_course(course_id: int, user: models.User, db: Session) -> models.Course:
     course = db.query(models.Course).filter(
         models.Course.id == course_id, models.Course.lecturer_id == user.id
@@ -57,7 +87,7 @@ def list_assessments(course_id: int, current_user: models.User = Depends(get_lec
 @router.post("/courses/{course_id}/assessments", status_code=201)
 def create_assessment(course_id: int, data: schemas.AssessmentCreate, current_user: models.User = Depends(get_lecturer), db: Session = Depends(get_db)):
     _owned_course(course_id, current_user, db)
-    if data.type not in {"assignment", "project", "quiz"}:
+    if data.type not in VALID_ASSESSMENT_TYPES:
         raise HTTPException(status_code=422, detail="Invalid assessment type")
     a = models.Assessment(
         course_id=course_id, type=data.type, title=data.title, description=data.description,
@@ -81,6 +111,9 @@ def _owned_assessment(assessment_id: int, user: models.User, db: Session) -> mod
 @router.put("/assessments/{assessment_id}")
 def update_assessment(assessment_id: int, data: schemas.AssessmentCreate, current_user: models.User = Depends(get_lecturer), db: Session = Depends(get_db)):
     a = _owned_assessment(assessment_id, current_user, db)
+    # Same allowlist as create: an update must not be a back door around it.
+    if data.type not in VALID_ASSESSMENT_TYPES:
+        raise HTTPException(status_code=422, detail="Invalid assessment type")
     a.type, a.title, a.description = data.type, data.title, data.description
     a.start_date, a.end_date = data.start_date, data.end_date
     a.max_marks = data.max_marks or 100.0
@@ -150,16 +183,18 @@ def submit_assessment(assessment_id: int, data: schemas.AssessmentSubmit, curren
     if a.end_date and datetime.utcnow() > a.end_date:
         raise HTTPException(status_code=403, detail="Assessment is closed")
 
+    file_url = _validate_own_upload(data.file_url, current_user.id)
+
     sub = db.query(models.Submission).filter(
         models.Submission.assessment_id == assessment_id, models.Submission.student_id == current_user.id
     ).first()
     if sub:
-        sub.file_url = data.file_url
+        sub.file_url = file_url
         sub.submitted_at = datetime.utcnow()
     else:
         db.add(models.Submission(
             assessment_id=assessment_id, student_id=current_user.id,
-            file_url=data.file_url, submitted_at=datetime.utcnow(),
+            file_url=file_url, submitted_at=datetime.utcnow(),
         ))
     db.commit()
     return {"message": "Submitted"}

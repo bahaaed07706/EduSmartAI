@@ -1,5 +1,5 @@
 // src/components/Layout/MainLayout.jsx
-import React, { useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import MobileNav, { MobileNavToggle } from "./MobileNav";
@@ -12,6 +12,12 @@ const MainLayout = () => {
   const role = user?.role || null;
   const [navOpen, setNavOpen] = useState(false);
   const toggleRef = useRef(null);
+
+  // Stable identities: MobileNav's effect depends on onClose, so an inline
+  // arrow would re-run that effect on every render of this component and pull
+  // focus back into the drawer while the user is tabbing through it.
+  const closeNav = useCallback(() => setNavOpen(false), []);
+  const toggleNav = useCallback(() => setNavOpen((v) => !v), []);
 
   // Show chatbot for student and lecturer roles
   const showChatbot = role === "student" || role === "lecturer";
@@ -26,7 +32,7 @@ const MainLayout = () => {
       <Sidebar />
       <MobileNav
         open={navOpen}
-        onClose={() => setNavOpen(false)}
+        onClose={closeNav}
         role={role || "student"}
         triggerRef={toggleRef}
       />
@@ -36,7 +42,7 @@ const MainLayout = () => {
         <div className="flex items-center gap-3 border-b border-slate-200 bg-white px-4 py-2 md:hidden">
           <MobileNavToggle
             open={navOpen}
-            onToggle={() => setNavOpen((v) => !v)}
+            onToggle={toggleNav}
             buttonRef={toggleRef}
           />
           <span className="text-sm font-semibold text-ink">EduSmartAI</span>

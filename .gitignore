@@ -43,10 +43,16 @@ edusmartai-frontend/.env
 # Large Datasets (Blockers)
 Training_Data/studentVle.csv
 
-# Uploaded files
+# Uploaded files — never commit anything a user submitted.
 backend/uploads/course_*
 backend/uploads/student_files/user_*
 backend/uploads/materials/*
+# Assessment submissions written by POST /files/upload.
+backend/uploads/submissions/
+
+# Local credential files for scripts (templates are committed, values are not)
+scripts/.env.a11y
+.env.a11y
 
 # Local backups (never commit)
 _backup_*/

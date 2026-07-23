@@ -23,23 +23,80 @@ UPLOAD_DIR = (Path(__file__).parent.parent / "uploads").resolve()
 
 
 def _resolve_within_uploads(stored_path: str) -> Optional[Path]:
-    """Resolve a stored file path and confirm it stays inside UPLOAD_DIR.
+    """Resolve a stored file reference and confirm it stays inside UPLOAD_DIR.
 
-    Guards against path traversal: any resolved path that escapes the uploads
-    root (e.g. via ``..`` or an absolute path from another location) is rejected.
-    Returns the safe Path, or None if the file is missing/outside the root.
+    Stored references come in three historical shapes, and all must resolve
+    identically on Windows and POSIX:
+
+    * ``/uploads/submissions/user_5/ab.pdf`` — the URL-style value returned by
+      ``POST /files/upload``. The leading slash makes ``Path.is_absolute()``
+      True on POSIX but False on Windows, so it must be stripped *before* any
+      absolute/relative decision. Without this the download 404s on Linux while
+      passing on a Windows dev machine.
+    * ``submissions/user_5/ab.pdf`` — a plain relative path.
+    * ``C:\\...\\uploads\\course_1\\x.pdf`` — a real absolute filesystem path
+      written by older ``upload_course_material`` rows.
+
+    Guards against traversal: any resolved path that escapes the uploads root
+    (via ``..`` or an absolute path elsewhere) is rejected. Returns the safe
+    Path, or None if the file is missing or outside the root.
     """
     if not stored_path:
         return None
     try:
-        candidate = Path(stored_path)
-        if not candidate.is_absolute():
-            candidate = UPLOAD_DIR / candidate
-        candidate = candidate.resolve()
-        candidate.relative_to(UPLOAD_DIR)  # raises ValueError if outside
+        # Normalise separators so a Windows-style value resolves on POSIX too.
+        text = str(stored_path).replace("\\", "/").strip()
+        if not text:
+            return None
+
+        # A genuine absolute path already inside the uploads root (legacy
+        # `upload_course_material` rows) is used as-is. This must be tried
+        # BEFORE prefix-stripping, so a POSIX path such as
+        # /srv/app/backend/uploads/course_1/x.pdf is not mangled.
+        candidate = None
+        probe = Path(text)
+        if probe.is_absolute():
+            try:
+                resolved = probe.resolve()
+                resolved.relative_to(UPLOAD_DIR)
+                candidate = resolved
+            except (ValueError, OSError):
+                candidate = None
+
+        if candidate is None:
+            # URL-style or relative reference. Strip the "/uploads" prefix and
+            # any leading slashes so it is interpreted relative to UPLOAD_DIR
+            # rather than the filesystem root — the leading slash is what makes
+            # is_absolute() True on POSIX but False on Windows.
+            rel = text
+            lowered = rel.lower()
+            if lowered.startswith("/uploads/"):
+                rel = rel[len("/uploads/"):]
+            elif lowered.startswith("uploads/"):
+                rel = rel[len("uploads/"):]
+            rel = rel.lstrip("/")
+            if not rel:
+                return None
+            candidate = (UPLOAD_DIR / rel).resolve()
+            candidate.relative_to(UPLOAD_DIR)  # raises ValueError if outside
     except (ValueError, OSError):
         return None
     return candidate if candidate.is_file() else None
+
+def _invalidate_rag_index() -> None:
+    """Drop the cached retrieval index after the material corpus changes.
+
+    Imported lazily to avoid a circular import (chatbot_routes imports nothing
+    from here, but the router registration order makes a top-level import
+    fragile). Failing to invalidate must never break the upload itself.
+    """
+    try:
+        from routes.chatbot_routes import reset_rag_index
+
+        reset_rag_index()
+    except Exception as e:  # pragma: no cover - defensive
+        print(f"[files] could not invalidate RAG index: {type(e).__name__}")
+
 
 # Allowed file types
 ALLOWED_EXTENSIONS = {".pdf", ".docx", ".doc", ".txt", ".pptx", ".xlsx"}
@@ -170,7 +227,11 @@ async def upload_course_material(
     db.add(material)
     db.commit()
     db.refresh(material)
-    
+
+    # The retrieval index is process-cached; without this the new material is
+    # invisible to the chatbot until the server restarts.
+    _invalidate_rag_index()
+
     return {
         "message": "File uploaded successfully",
         "material_id": material.id,
@@ -188,15 +249,17 @@ def get_course_files(
 ):
     """Get all files for a course"""
     
-    # Check access (student enrolled or lecturer owns)
+    # Check access (actively enrolled student, or the lecturer who owns it).
     if current_user.role == "student":
         enrollment = db.query(models.Enrollment).filter(
             models.Enrollment.student_id == current_user.id,
-            models.Enrollment.course_id == course_id
+            models.Enrollment.course_id == course_id,
+            # A withdrawn enrollment row still exists; it must not grant access.
+            models.Enrollment.status != "withdrawn",
         ).first()
         if not enrollment:
             raise HTTPException(status_code=403, detail="Not enrolled in this course")
-    
+
     elif current_user.role == "lecturer":
         course = db.query(models.Course).filter(
             models.Course.id == course_id,
@@ -204,7 +267,11 @@ def get_course_files(
         ).first()
         if not course:
             raise HTTPException(status_code=403, detail="You don't teach this course")
-    
+
+    else:
+        # Deny by default: no role falls through to the material list unchecked.
+        raise HTTPException(status_code=403, detail="Access denied")
+
     # Get materials
     materials = db.query(models.CourseMaterial).filter(
         models.CourseMaterial.course_id == course_id
@@ -241,7 +308,8 @@ def download_material(
     if current_user.role == "student":
         enrollment = db.query(models.Enrollment).filter(
             models.Enrollment.student_id == current_user.id,
-            models.Enrollment.course_id == material.course_id
+            models.Enrollment.course_id == material.course_id,
+            models.Enrollment.status != "withdrawn",
         ).first()
         if not enrollment:
             raise HTTPException(status_code=403, detail="Not enrolled in this course")
@@ -302,5 +370,8 @@ def delete_material(
     # Delete from database
     db.delete(material)
     db.commit()
+
+    # Drop the cached index so the chatbot stops citing deleted content.
+    _invalidate_rag_index()
 
     return {"message": "Material deleted"}

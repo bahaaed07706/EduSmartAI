@@ -80,9 +80,15 @@ def delete_department(dept_id: int, current_user: models.User = Depends(get_admi
     d = db.query(models.Department).filter(models.Department.id == dept_id).first()
     if not d:
         raise HTTPException(status_code=404, detail="Department not found")
-    in_use = db.query(models.Course).filter(models.Course.department_id == dept_id).count()
-    if in_use:
-        raise HTTPException(status_code=409, detail="Department is used by courses and cannot be deleted")
+    # Both courses and users carry department_id; checking only courses would
+    # leave every student in the department pointing at a deleted row.
+    courses_in_use = db.query(models.Course).filter(models.Course.department_id == dept_id).count()
+    users_in_use = db.query(models.User).filter(models.User.department_id == dept_id).count()
+    if courses_in_use or users_in_use:
+        raise HTTPException(
+            status_code=409,
+            detail="Department is still linked to courses or users and cannot be deleted",
+        )
     db.delete(d)
     db.commit()
     return {"message": "Department deleted"}

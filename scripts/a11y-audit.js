@@ -26,11 +26,41 @@ const VIEWPORTS = [
   { name: "1440", width: 1440, height: 900 },
 ];
 
+// Credentials come from the environment — never committed. Copy
+// .env.a11y.example, fill it in locally, and export before running.
+// Passwords are read but never printed or written to the report.
 const ACCOUNTS = {
-  admin: { email: "admin@edu.com", password: "admin123" },
-  lecturer: { email: "dr.salem@edu.com", password: "lecturer123" },
-  student: { email: "ahmed@edu.com", password: "student123" },
+  admin: {
+    email: process.env.A11Y_ADMIN_EMAIL,
+    password: process.env.A11Y_ADMIN_PASSWORD,
+  },
+  lecturer: {
+    email: process.env.A11Y_LECTURER_EMAIL,
+    password: process.env.A11Y_LECTURER_PASSWORD,
+  },
+  student: {
+    email: process.env.A11Y_STUDENT_EMAIL,
+    password: process.env.A11Y_STUDENT_PASSWORD,
+  },
 };
+
+/** Fail fast with an actionable message rather than a confusing login timeout. */
+function assertCredentials(roles) {
+  const missing = [];
+  for (const role of roles) {
+    const key = role.toUpperCase();
+    if (!ACCOUNTS[role] || !ACCOUNTS[role].email) missing.push(`A11Y_${key}_EMAIL`);
+    if (!ACCOUNTS[role] || !ACCOUNTS[role].password) missing.push(`A11Y_${key}_PASSWORD`);
+  }
+  if (missing.length) {
+    console.error(
+      "Missing required environment variables:\n  " +
+        missing.join("\n  ") +
+        "\n\nSee scripts/.env.a11y.example. Never hardcode credentials in this file."
+    );
+    process.exit(1);
+  }
+}
 
 // Representative page per role (plus the unauthenticated login screen).
 const TARGETS = [
@@ -74,6 +104,9 @@ async function audit(page) {
 }
 
 (async () => {
+  // Only demand credentials for the roles this run actually signs in as.
+  assertCredentials([...new Set(TARGETS.map((t) => t.role).filter(Boolean))]);
+
   const browser = await puppeteer.launch({ headless: "new", args: ["--no-sandbox"] });
   const summary = [];
   let total = 0;

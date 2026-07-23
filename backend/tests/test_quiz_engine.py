@@ -132,3 +132,39 @@ def test_attempt_belongs_to_student(client, lecturers, students, courses, enroll
     # A different student cannot read or submit this attempt.
     assert client.get(f"/api/v1/students/attempts/{attempt_id}", headers=auth_headers(students[1])).status_code == 403
     assert client.post(f"/api/v1/students/attempts/{attempt_id}/submit", headers=auth_headers(students[1])).status_code == 403
+
+
+def test_attempted_quiz_cannot_be_hard_deleted(client, lecturers, students, courses, enrollments, auth_headers):
+    """Deleting an attempted quiz would orphan QuizAttempt rows.
+
+    Quiz has no cascade to QuizAttempt and SQLite does not enforce foreign
+    keys, so the attempt would survive with a dangling quiz_id and every later
+    read of it would 500. It would also destroy graded history.
+    """
+    quiz_id, question = _make_quiz_with_question(client, lecturers[0], courses[0], auth_headers)
+    lh = auth_headers(lecturers[0])
+    sh = auth_headers(students[0])
+
+    # Before any attempt, deletion is allowed for a throwaway quiz.
+    spare_id, _ = _make_quiz_with_question(client, lecturers[0], courses[0], auth_headers)
+    assert client.delete(f"/api/v1/lecturers/quizzes/{spare_id}", headers=lh).status_code == 200
+
+    # Student starts and submits an attempt.
+    start = client.post(f"/api/v1/students/quizzes/{quiz_id}/start", headers=sh)
+    assert start.status_code == 200, start.text
+    attempt_id = start.json()["attempt_id"]
+    correct = next(o["id"] for o in question["options"] if o["is_correct"])
+    client.post(f"/api/v1/students/attempts/{attempt_id}/answers",
+                json={"question_id": question["id"], "selected_option_id": correct}, headers=sh)
+    client.post(f"/api/v1/students/attempts/{attempt_id}/submit", headers=sh)
+
+    # Now the quiz, its question, and the selected option are all protected.
+    assert client.delete(f"/api/v1/lecturers/quizzes/{quiz_id}", headers=lh).status_code == 409
+    assert client.delete(
+        f"/api/v1/lecturers/quizzes/{quiz_id}/questions/{question['id']}", headers=lh
+    ).status_code == 409
+    assert client.delete(f"/api/v1/lecturers/options/{correct}", headers=lh).status_code == 409
+
+    # The attempt is still readable — no orphaned row, no 500.
+    assert client.get(f"/api/v1/students/attempts/{attempt_id}", headers=sh).status_code == 200
+    assert client.get(f"/api/v1/students/quizzes/{quiz_id}/result", headers=sh).status_code == 200

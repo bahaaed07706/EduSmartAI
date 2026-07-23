@@ -197,6 +197,14 @@ def delete_question(quiz_id: int, question_id: int, current_user: models.User = 
     ).first()
     if not q:
         raise HTTPException(status_code=404, detail="Question not found")
+    # Answers reference this question; removing it would orphan them and make
+    # the stored score disagree with the rendered breakdown.
+    answered = db.query(models.QuizAnswer).filter(models.QuizAnswer.question_id == question_id).count()
+    if answered:
+        raise HTTPException(
+            status_code=409,
+            detail="Question has student answers and cannot be deleted",
+        )
     db.delete(q)
     db.commit()
     return {"message": "Question deleted"}
@@ -249,6 +257,15 @@ def update_option(option_id: int, data: schemas.QuizOptionUpdate, current_user: 
 @router.delete("/options/{option_id}")
 def delete_option(option_id: int, current_user: models.User = Depends(get_lecturer), db: Session = Depends(get_db)):
     o = _option_owned_by_lecturer(option_id, current_user, db)
+    # A selected option must survive: deleting it would leave the answer row
+    # pointing at nothing, so the result page would show "No answer" while the
+    # stored score still credits the mark.
+    selected = db.query(models.QuizAnswer).filter(models.QuizAnswer.selected_option_id == option_id).count()
+    if selected:
+        raise HTTPException(
+            status_code=409,
+            detail="Option has been selected by students and cannot be deleted",
+        )
     db.delete(o)
     db.commit()
     return {"message": "Option deleted"}
@@ -256,7 +273,21 @@ def delete_option(option_id: int, current_user: models.User = Depends(get_lectur
 
 @router.delete("/quizzes/{quiz_id}")
 def delete_quiz(quiz_id: int, current_user: models.User = Depends(get_lecturer), db: Session = Depends(get_db)):
+    """Delete a quiz, but never one students have already attempted.
+
+    Quiz has no cascade to QuizAttempt and SQLite does not enforce foreign keys,
+    so deleting a quiz with attempts would leave rows with a dangling quiz_id —
+    every later read of those attempts would 500 on `quiz.title`. It would also
+    destroy graded history, which the data-preservation policy forbids. Mirrors
+    the 409 guard in assessment_routes.delete_assessment.
+    """
     quiz = _owned_quiz(quiz_id, current_user, db)
+    attempts = db.query(models.QuizAttempt).filter(models.QuizAttempt.quiz_id == quiz_id).count()
+    if attempts:
+        raise HTTPException(
+            status_code=409,
+            detail="Quiz has student attempts and cannot be deleted",
+        )
     db.delete(quiz)
     db.commit()
     return {"message": "Quiz deleted"}
@@ -271,32 +302,55 @@ def quiz_results(quiz_id: int, current_user: models.User = Depends(get_lecturer)
         models.QuizAttempt.quiz_id == quiz_id, models.QuizAttempt.status == "submitted"
     ).all()
 
+    enrollments = db.query(models.Enrollment).filter(
+        models.Enrollment.course_id == quiz.course_id, models.Enrollment.status != "withdrawn"
+    ).all()
+
+    # Resolve every student name in one query instead of one per enrollment.
+    student_ids = [e.student_id for e in enrollments]
+    names = {}
+    if student_ids:
+        names = {
+            u.id: u.name
+            for u in db.query(models.User).filter(models.User.id.in_(student_ids)).all()
+        }
+    scores_by_student = {a.student_id: a.score for a in submitted}
+
     students = []
     scores = []
-    for e in db.query(models.Enrollment).filter(
-        models.Enrollment.course_id == quiz.course_id, models.Enrollment.status != "withdrawn"
-    ).all():
-        student = db.query(models.User).filter(models.User.id == e.student_id).first()
-        att = next((a for a in submitted if a.student_id == e.student_id), None)
-        score = att.score if att else None
+    for e in enrollments:
+        score = scores_by_student.get(e.student_id)
         if isinstance(score, (int, float)):
             scores.append(score)
-        students.append({"student_id": e.student_id, "student_name": student.name if student else None, "score": score})
+        students.append({
+            "student_id": e.student_id,
+            "student_name": names.get(e.student_id),
+            "score": score,
+        })
 
-    # Per-question difficulty over submitted attempts.
+    # Per-question difficulty over submitted attempts. Load all answers once and
+    # resolve correctness from an in-memory option map — the previous version
+    # issued a query per (question, attempt) pair plus one per selected option.
+    attempt_ids = [a.id for a in submitted]
+    answers = []
+    if attempt_ids:
+        answers = db.query(models.QuizAnswer).filter(
+            models.QuizAnswer.attempt_id.in_(attempt_ids)
+        ).all()
+
+    correct_option_ids = {
+        o.id for q in quiz.questions for o in q.options if o.is_correct
+    }
+    selected_by_question = {}
+    for ans in answers:
+        if ans.selected_option_id is not None:
+            selected_by_question.setdefault(ans.question_id, []).append(ans.selected_option_id)
+
     questions_difficulty = []
     for q in quiz.questions:
-        answered = 0
-        correct = 0
-        for a in submitted:
-            ans = db.query(models.QuizAnswer).filter(
-                models.QuizAnswer.attempt_id == a.id, models.QuizAnswer.question_id == q.id
-            ).first()
-            if ans and ans.selected_option_id is not None:
-                answered += 1
-                opt = db.query(models.QuizOption).filter(models.QuizOption.id == ans.selected_option_id).first()
-                if opt and opt.is_correct:
-                    correct += 1
+        selected = selected_by_question.get(q.id, [])
+        answered = len(selected)
+        correct = sum(1 for opt_id in selected if opt_id in correct_option_ids)
         pct = round((correct / answered) * 100, 1) if answered else None
         questions_difficulty.append({"question_text": q.question_text, "correct_percentage": pct})
 

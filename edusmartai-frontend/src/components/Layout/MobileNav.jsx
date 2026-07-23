@@ -38,10 +38,42 @@ const MobileNav = ({ open, onClose, role, triggerRef }) => {
   useEffect(() => {
     if (!open) return undefined;
 
+    const FOCUSABLE =
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
     const onKeyDown = (event) => {
       if (event.key === "Escape") {
         onClose();
         triggerRef?.current?.focus();
+        return;
+      }
+
+      // Focus trap (WCAG 2.4.3): aria-modal hides the background from screen
+      // readers but does nothing for Tab, so without this the keyboard walks
+      // straight out of the drawer into the page behind the backdrop.
+      if (event.key !== "Tab") return;
+      const panel = panelRef.current;
+      if (!panel) return;
+
+      const items = Array.from(panel.querySelectorAll(FOCUSABLE)).filter(
+        (el) => el.offsetParent !== null
+      );
+      if (items.length === 0) {
+        event.preventDefault();
+        panel.focus();
+        return;
+      }
+
+      const first = items[0];
+      const last = items[items.length - 1];
+      const active = document.activeElement;
+
+      if (event.shiftKey && (active === first || active === panel)) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
       }
     };
 
