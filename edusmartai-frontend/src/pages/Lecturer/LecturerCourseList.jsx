@@ -271,9 +271,12 @@ const LecturerCourseList = () => {
               <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
                 🎓 Semester
               </span>
-              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 shadow-sm">
+              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 shadow-sm">
+                {/* min-h-[24px] meets WCAG 2.2 SC 2.5.8 Target Size (Minimum).
+                    Measured at 69x18 on a 360px viewport before this. */}
                 <select
-                  className="bg-transparent text-xs font-medium text-slate-800 focus:outline-none"
+                  aria-label="Filter courses by semester"
+                  className="min-h-[24px] bg-transparent text-xs font-medium text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                   value={selectedSemesterId || ""}
                   onChange={handleSemesterChange}
                 >

@@ -72,8 +72,9 @@ services:
         value: "24"
       - key: PUPPETEER_SKIP_DOWNLOAD
         value: "true"
-      # Points at the API service above.
-      - key: REACT_APP_API_URL
+      # Origin of the API service above, with no trailing slash and no path —
+      # axiosClient appends /api/v1 itself.
+      - key: REACT_APP_API_BASE_URL
         sync: false
       # Demo credentials shown on the login screen. Leave unset to show
       # nothing. The admin account is deliberately never listed.
