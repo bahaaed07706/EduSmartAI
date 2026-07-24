@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" role="img" aria-label="EduSmartAI icon">
+  <rect width="40" height="40" rx="9" fill="#1d4ed8"/>
+  <g fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 28V14a.8.8 0 0 1 1.1-.7L19 17v14l-9.9-2.3A.8.8 0 0 1 8 28Z"/>
+    <path d="M30 28V14a.8.8 0 0 0-1.1-.7L19 17v14l9.9-2.3A.8.8 0 0 0 30 28Z"/>
+  </g>
+  <path d="M23 14.5v-3M27 14.5V8" stroke="#7dd3fc" stroke-width="2.4" stroke-linecap="round"/>
+</svg>

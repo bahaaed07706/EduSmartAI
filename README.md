@@ -1,6 +1,11 @@
-# EduSmartAI
+<div align="center">
+
+<img src=".github/assets/logo.svg#gh-light-mode-only" alt="EduSmartAI" width="260">
+<img src=".github/assets/logo-dark.svg#gh-dark-mode-only" alt="EduSmartAI" width="260">
 
 **An academic management platform that helps universities notice a struggling student while there is still time to help them.**
+
+</div>
 
 [![CI](https://github.com/bahaaed07706/EduSmartAI/actions/workflows/ci.yml/badge.svg)](https://github.com/bahaaed07706/EduSmartAI/actions/workflows/ci.yml)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue)](https://www.python.org/)
