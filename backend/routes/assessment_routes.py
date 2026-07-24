@@ -10,6 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
+from config import UPLOAD_DIR  # single source of truth for the uploads root
 from database import get_db
 from auth import get_current_user, get_lecturer
 from routes.file_routes import _resolve_within_uploads  # traversal-safe resolver
@@ -19,7 +20,6 @@ import schemas
 router = APIRouter(prefix="/lecturers", tags=["Assessments (Lecturer)"])
 student_router = APIRouter(prefix="", tags=["Assessments (Student)"])
 
-UPLOAD_DIR = (Path(__file__).parent.parent / "uploads").resolve()
 ALLOWED_EXTENSIONS = {".pdf", ".docx", ".doc", ".txt", ".pptx", ".xlsx", ".png", ".jpg", ".jpeg", ".zip"}
 MAX_FILE_SIZE = 15 * 1024 * 1024  # 15 MB
 

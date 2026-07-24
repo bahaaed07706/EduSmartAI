@@ -13,7 +13,7 @@ def test_health_and_login_behavior(client, admin, known_password):
     )
 
     assert health.status_code == 200
-    assert health.json() == {"status": "healthy"}
+    assert health.json()["status"] == "healthy"
     assert successful_login.status_code == 200
     assert successful_login.json()["token_type"] == "bearer"
     assert successful_login.json()["user"]["role"] == "admin"

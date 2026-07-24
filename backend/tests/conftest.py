@@ -32,6 +32,10 @@ _TEST_ENV = {
     "JWT_EXPIRE_MINUTES": "30",
     "SKIP_MODEL_VALIDATION": "1",
     "PYTHON_DOTENV_DISABLED": "1",
+    # Every test drives requests from the same client address, so the
+    # production rate limiter would make unrelated tests fail depending on
+    # execution order. Its own behaviour is covered by test_rate_limit.py.
+    "RATE_LIMIT_ENABLED": "0",
     # Explicitly mask provider credentials before chatbot_routes is imported.
     "GROQ_API_KEY": "",
     "OPENAI_API_KEY": "",

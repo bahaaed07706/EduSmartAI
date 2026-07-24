@@ -12,14 +12,12 @@ from typing import Optional
 import shutil
 from datetime import datetime
 from pathlib import Path
+from config import UPLOAD_DIR  # env-driven; a deployment points this at a persistent disk
 from database import get_db
 from auth import get_lecturer, get_current_user
 import models
 
 router = APIRouter(prefix="/files", tags=["Files"])
-
-# Upload directory (resolved once so we can validate paths stay inside it)
-UPLOAD_DIR = (Path(__file__).parent.parent / "uploads").resolve()
 
 
 def _resolve_within_uploads(stored_path: str) -> Optional[Path]:

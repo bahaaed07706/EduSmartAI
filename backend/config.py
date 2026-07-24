@@ -40,6 +40,15 @@ if JWT_SECRET.strip() in _INSECURE_JWT_SECRETS or len(JWT_SECRET.strip()) < _MIN
 # ============ CORS ============
 CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
 
+# ============ Uploads ============
+# Single source of truth for where user files live. On a platform deployment
+# this points at a mounted persistent disk (e.g. /var/data/uploads); the
+# container filesystem is otherwise wiped on every redeploy, which would lose
+# every course material and student submission.
+UPLOAD_DIR = Path(
+    os.getenv("UPLOAD_DIR", str(BASE_DIR / "uploads"))
+).resolve()
+
 # ============ Model Paths ============
 # All paths are configurable via environment variables with sensible fallbacks
 
