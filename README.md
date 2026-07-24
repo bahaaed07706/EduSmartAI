@@ -1,323 +1,334 @@
-# EduSmartAI — AI-Powered Educational Management Platform
+# EduSmartAI
 
-An educational management platform that integrates role-based academic administration, machine learning-driven student performance prediction, and a context-aware AI chatbot. EduSmartAI helps institutions identify academic risk indicators early, provides lecturers with student performance insights, and assists students through automated academic guidance—built with FastAPI and React 18.
+**An academic management platform that helps universities notice a struggling student while there is still time to help them.**
 
----
+[![CI](https://github.com/bahaaed07706/EduSmartAI/actions/workflows/ci.yml/badge.svg)](https://github.com/bahaaed07706/EduSmartAI/actions/workflows/ci.yml)
+[![Python 3.12](https://img.shields.io/badge/python-3.12-blue)](https://www.python.org/)
+[![Node 24](https://img.shields.io/badge/node-24-green)](https://nodejs.org/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-lightgrey)](LICENSE)
 
-## Why This Project Matters
-
-In many educational environments, academic risk indicators are identified late in the semester after assessments are finalized. Attendance metrics, assessment scores, and online platform participation often exist in isolated spreadsheets or separate systems without a unified analytical view.
-
-EduSmartAI addresses these challenges by:
-
-- **Predicting academic performance early** using pre-trained Random Forest classification models that analyze learning behavior and historical assessment patterns.
-- **Centralizing academic records**—including grades, attendance, course materials, and engagement metrics—into a unified system accessible to students, lecturers, and administrators.
-- **Providing a context-aware AI chatbot assistant** that builds dynamic prompts using student profiles, course enrollment, grades, attendance logs, and uploaded course materials.
-- **Assisting lecturers with risk detection** by surfacing per-student prediction outputs and behavioral classifications in class management views.
+> **Live demo:** not yet deployed. The architecture is decided and the
+> deployment configuration is committed in [`render.yaml`](render.yaml) — see
+> [docs/deployment-decision.md](docs/deployment-decision.md). This README will
+> carry the URL once it is live and verified, not before.
 
 ---
 
-## Core Features
+## The problem
 
-### Role-Based Access Control
+Students who fail a course rarely fail suddenly. The signals appear weeks
+earlier: attendance drops, material goes unopened, an early assignment comes
+back weak. Those signals exist — but they live in different systems, and nobody
+assembles them until final grades are submitted. By then it is too late to act.
 
-| Role | Capabilities |
-|---|---|
-| **Student** | View enrolled courses, monitor grades and attendance records, review AI prediction results (OULAD and AXI), access uploaded course materials, and query the AI chatbot. |
-| **Lecturer** | Manage assigned courses, record student grades and attendance, execute ML predictions for enrolled students, view risk indicators, upload course materials, and query the chatbot with student context. |
-| **Admin** | Manage academic departments, courses, user accounts (students, lecturers, admins), semesters, and course enrollment records across the platform. |
+EduSmartAI puts those signals in one place and adds two things: a risk
+classification from a trained model, and an assistant that answers a student's
+questions using only the course material they are actually enrolled in.
 
-### Machine Learning Performance Prediction
+## What it does
 
-- **OULAD Risk Prediction Model:** Binary classification model predicting module pass/fail outcomes using 7 features derived from the Open University Learning Analytics Dataset. Preprocessed with StandardScaler and trained using Random Forest.
-- **AXI Behavioral Engagement Model:** Three-class classification model categorizing student engagement into High (H), Medium (M), or Low (L) categories using 6 behavioral metrics from the xAPI-Edu-Data dataset. Preprocessed with StandardScaler and trained using Random Forest.
-- **Inference Integration:** Predictions are evaluated on demand per student and course, stored in the local SQLite database, and rendered across user dashboards.
+**Administrators** manage the academic structure — departments, semesters,
+courses, lecturers, enrolments. Records are never destroyed: users are
+deactivated, courses archived, enrolments withdrawn. Deleting something with
+history attached returns a clear refusal rather than silently dropping rows.
 
-### Chatbot Assistant with Context Injection
+**Lecturers** run their own courses: attendance, grades, materials, auto-graded
+quizzes, and file-submission assessments with manual grading. The quiz results
+page shows per-question difficulty, so a lecturer can see which concept the
+class missed rather than only who scored badly.
 
-- **Groq API Integration:** Connects to the Groq API utilizing the `llama-3.3-70b-versatile` model.
-- **Dynamic Context Assembly:** Automatically builds role-specific system prompts containing user profiles, course records, grades, attendance stats, and ML prediction scores.
-- **Course Material Parsing:** Extracts plain text from uploaded course documents (PDF, DOCX, PPTX) via PyMuPDF and injects material excerpts into the prompt payload for course-grounded responses.
-- **Graceful Fallback:** If `GROQ_API_KEY` is not present in the environment configuration, the system returns template-based local fallback responses without breaking execution.
+**Students** see their own record, attempt quizzes with immediate results,
+submit assessment files, and ask the assistant about their material.
 
----
+## Screenshots
 
-## Architecture Overview
+Captured from the running application with synthetic demo data.
+
+| Admin | Lecturer | Student |
+|---|---|---|
+| ![Admin dashboard](docs/screenshots/admin-dashboard-1440.png) | ![Lecturer dashboard](docs/screenshots/lecturer-dashboard-1440.png) | ![Student dashboard](docs/screenshots/student-dashboard-1440.png) |
+
+At 390px — a designed mobile layout, not a compressed desktop one:
+
+| Login | Student | Admin |
+|---|---|---|
+| ![Login on mobile](docs/screenshots/login-390.png) | ![Student dashboard on mobile](docs/screenshots/student-dashboard-390.png) | ![Admin dashboard on mobile](docs/screenshots/admin-dashboard-390.png) |
+
+## The AI assistant, and what "RAG" means here
+
+Many projects describe context injection as retrieval-augmented generation.
+This one did too, until an audit caught it — the chatbot was pasting material
+*titles* into the prompt and calling it retrieval. That was replaced with actual
+retrieval.
+
+```mermaid
+flowchart LR
+    A[Lecturer uploads material] --> B[Text extraction<br/>PDF / DOCX / PPTX]
+    B --> C[Chunking<br/>500 chars, 100 overlap]
+    C --> D[TF-IDF index<br/>char n-grams 3-5]
+    E[Student question] --> F{Authorization mask}
+    G[(Enrolment<br/>in database)] --> F
+    F -->|allowed courses only| H[Cosine ranking]
+    D --> H
+    H --> I{Score >= 0.25?}
+    I -->|no| J[Abstain:<br/>nothing invented]
+    I -->|yes| K[Grounded answer<br/>+ citations]
+```
+
+Two details matter more than the ranking method.
+
+**The authorization mask is applied before scoring, not after.** The set of
+courses a user may retrieve from is derived from the database — enrolment for
+students, ownership for lecturers, empty for admins — and restricts candidates
+before any similarity is computed. A student cannot surface content from a
+course they are not enrolled in, regardless of how the question is phrased.
+There are tests for exactly this, including prompt-injection attempts.
+
+**It abstains.** Below a cosine score of 0.25 the system declines rather than
+answering from weak evidence.
+
+Retrieval is lexical — TF-IDF over character n-grams, not dense embeddings.
+That is deliberate: the corpus is mixed Arabic and English, and Arabic is
+morphologically rich enough that word-level tokenisation retrieves poorly. The
+trade-off is that synonyms sharing no characters will not match. On a 12-query
+bilingual evaluation set, precision@1, recall@3 and MRR are all 1.00 — a set
+small enough that the honest reading is "the mechanism works," not "retrieval is
+solved."
+
+Details in [docs/rag.md](docs/rag.md).
+
+## Machine learning, and an important caveat
+
+| Model | Predicts | Accuracy | ROC-AUC | n |
+|---|---|---|---|---|
+| AXI | Performance class (3-way) | 0.7917 | 0.9219 | 96 |
+| OULAD | Pass / fail | 0.9790 | 0.9937 | 2811 |
+
+**The OULAD figure is inflated by target leakage and must not be read as
+reliable early risk prediction.** A `Pass_rate` feature derived from the outcome
+leaked into training, so the model is largely reading the answer rather than
+predicting it. Presenting 97.9% as an early-warning capability would be wrong.
+Fixing it properly — rebuilding features with a strict temporal cutoff — is the
+top open item on the [roadmap](docs/roadmap.md). The number will fall
+substantially, and that is the point.
+
+Also found and fixed: a **training/serving skew**. `Days_Active` was computed as
+`max(date)` during training but as a count of distinct days at inference, so the
+deployed model was reading a feature that meant something different from the one
+it learned. That class of defect produces quietly wrong predictions with no
+error anywhere, which is why
+[`scripts/evaluate_models.py`](scripts/evaluate_models.py) exists as a
+reproducible, read-only check. Full detail in
+[docs/ml-evaluation.md](docs/ml-evaluation.md).
+
+## Architecture
 
 ```mermaid
 flowchart TB
-    subgraph Client ["Frontend Layer (React 18 + Tailwind)"]
-        UI["Role-Based Dashboards\n(Student · Lecturer · Admin)"]
-        ChatWidget["Chatbot Drawer Component"]
+    subgraph client [Browser]
+        R[React 18 + Tailwind<br/>React Router 7]
     end
 
-    subgraph Server ["Backend API Layer (FastAPI + Uvicorn)"]
-        Router["REST API Router\n(/api/v1/*)"]
-        AuthModule["JWT Auth Guard\n(HS256 Tokens)"]
-        MLService["ML Inference Engine\n(joblib + scikit-learn)"]
-        ChatService["Chatbot Context Builder\n(PyMuPDF + Prompt Engine)"]
+    subgraph api [FastAPI backend]
+        AUTH[JWT auth<br/>+ per-resource authorization]
+        ROUTES[Admin / Lecturer / Student<br/>Quiz / Assessment routes]
+        RAG[Retrieval layer<br/>TF-IDF + auth mask]
+        ML[Prediction<br/>RandomForest]
     end
 
-    subgraph Data ["Data & Model Storage"]
-        DB[("SQLite Database\nedusmart.db")]
-        Models["Serialized Models\n(.joblib files)"]
+    subgraph data [Storage]
+        DB[(SQLAlchemy 2<br/>SQLite / PostgreSQL)]
+        FILES[/Uploads<br/>auth-gated download/]
+        MODELS[/Saved models<br/>16 MB joblib/]
     end
 
-    subgraph External ["External AI Infrastructure"]
-        GroqAPI["Groq Cloud API\n(Llama 3.3 70B Versatile)"]
-    end
+    GROQ[Groq LLM<br/>optional]
 
-    UI -->|"HTTP / Axios (Bearer JWT)"| Router
-    ChatWidget -->|"POST /api/v1/chatbot/query"| Router
-    Router --> AuthModule
-    Router --> MLService
-    Router --> ChatService
-    MLService --> Models
-    Router --> DB
-    ChatService -->|"Fetch Context & Materials"| DB
-    ChatService -->|"Formatted Prompt Payload"| GroqAPI
+    R -->|HTTPS + Bearer| AUTH
+    AUTH --> ROUTES
+    ROUTES --> DB
+    ROUTES --> FILES
+    ROUTES --> RAG
+    ROUTES --> ML
+    RAG --> DB
+    RAG -.->|grounded prompt| GROQ
+    GROQ -.->|local fallback if absent| RAG
+    ML --> MODELS
 ```
 
----
+The chatbot degrades gracefully: with no API key configured it falls back to
+local responses and the API reports `ai_powered: false` rather than claiming
+capability it does not have.
 
-## Tech Stack
+## How a risk signal becomes an action
 
-| Layer | Technologies |
+```mermaid
+flowchart LR
+    A[Attendance<br/>Grades<br/>Quiz results] --> B[Per-student record]
+    B --> C[Feature engineering]
+    C --> D[Risk classification]
+    D --> E[Lecturer / admin sees signal]
+    E --> F[Intervention]
+    F -.->|not yet built| G[Outcome tracked]
+```
+
+The dashed step is honest: the product surfaces the signal but does not record
+what was done about it. Closing that loop is the highest-value institutional
+feature not yet built.
+
+## Security
+
+Authorization is enforced per resource, not per role. Being a lecturer is not
+sufficient to read a course — you must own it.
+
+- Quiz option correctness (`is_correct`) is **never** serialised to a student
+  before submission.
+- A student's submitted `file_url` must reference a file that student uploaded,
+  so a submission cannot point at course material or another student's folder.
+- Withdrawn students lose access to course material immediately.
+- Uploads are never publicly served. Download runs an ownership check first,
+  then a path-traversal check.
+- The application refuses to start on a weak or default `JWT_SECRET`, and
+  refuses to start in production with a wildcard CORS origin.
+- Rate limiting caps login attempts, chatbot queries and uploads.
+- No secret is logged, not even a prefix.
+
+An audit of this project found six critical issues, including an IDOR that
+leaked student PII, grades and predictions to any authenticated lecturer. All
+are fixed with regression tests. See [docs/security.md](docs/security.md).
+
+## Verified results
+
+Every number here comes from a command in this repository.
+
+| Check | Result |
 |---|---|
-| **Frontend** | React 18.3, React Router 7.9, Tailwind CSS 3.4, Axios 1.13, Lucide React, React Quill, DOMPurify |
-| **Backend** | Python 3.10+, FastAPI 0.109, Uvicorn 0.27, SQLAlchemy 2.0, Pydantic 2.5, python-jose (JWT), Passlib (bcrypt) |
-| **AI / ML** | scikit-learn 1.4, pandas 2.1, NumPy 1.26, joblib 1.3 |
-| **Chatbot & Utility** | Groq Python SDK 0.4, PyMuPDF 1.23, python-docx 1.1, python-pptx 0.6 |
-| **Database** | SQLite (local development file: `edusmart.db`) |
-| **Testing & Tooling** | python-dotenv, pytest 8.0, httpx 0.26 |
+| Backend tests | 99 passing, on Windows and Linux |
+| Lint (ruff) | clean |
+| Production build | compiles |
+| Accessibility (axe-core, WCAG 2.0/2.1/2.2 A+AA) | **0 violations**, 6 pages × 3 viewports |
+| Responsive audit | **0 issues**, 9 pages × 5 breakpoints (360–1440) |
+| Production dependency audit | 2 moderate, down from 59 (2 critical, 29 high) |
+| Secret scan | clean |
+| Migration idempotency | verified twice on a database copy |
 
----
+Accessibility and responsiveness are measured, not asserted:
+[`scripts/a11y-audit.js`](scripts/a11y-audit.js) runs axe-core against the real
+application, and [`scripts/responsive-audit.js`](scripts/responsive-audit.js)
+measures overflow, touch-target size and clipped text inside the page.
 
-## Repository Structure
+## Quick start
 
-```
-EduSmartAI/
-├── backend/                    # FastAPI REST application
-│   ├── main.py                 # Application entrypoint, CORS, route inclusion, model loading
-│   ├── config.py               # Environment configuration (Pydantic settings)
-│   ├── database.py             # SQLAlchemy engine setup and session management
-│   ├── models.py               # Database ORM models (User, Course, Grade, Attendance, StudentFeature, etc.)
-│   ├── schemas.py              # Pydantic data validation schemas
-│   ├── auth.py                 # Password hashing, JWT token generation, role verification
-│   ├── seed_data.py            # Local database populator with initial records and predictions
-│   ├── requirements.txt        # Backend dependencies
-│   ├── .env.example            # Environment template file
-│   ├── utils/
-│   │   └── pdf_extractor.py    # Text extraction utility for PDF, DOCX, and PPTX documents
-│   └── routes/
-│       ├── auth_routes.py      # User authentication endpoints
-│       ├── student_routes.py   # Student portal data endpoints
-│       ├── lecturer_routes.py  # Lecturer portal and course management endpoints
-│       ├── admin_routes.py     # Administrative CRUD management endpoints
-│       ├── prediction_routes.py # ML model inference endpoints
-│       ├── chatbot_routes.py   # Context builder and Groq API chatbot endpoints
-│       ├── file_routes.py      # Course material upload and download handling
-│       └── skeleton_routes.py  # System health check and utility endpoints
-│
-├── edusmartai-frontend/        # React single-page client application
-│   ├── src/
-│   │   ├── api/                # Axios client configuration and modular API requests
-│   │   ├── components/         # Reusable UI components (Layout, UI controls, Chatbot drawer)
-│   │   ├── context/            # AuthContext for global authentication and token storage
-│   │   ├── hooks/              # Custom React hooks (useAuth, useChatbot, useNotifications)
-│   │   ├── pages/              # Role-specific application views (Admin, Lecturer, Student)
-│   │   └── routing/            # Router setup with ProtectedRoute and RoleRoute guards
-│   ├── package.json            # Frontend dependency manifest
-│   └── .env.example            # Frontend environment variable template
-│
-├── Saved_Models/               # Serialized scikit-learn models and scalers
-│   ├── oulad_model_fixed.joblib      # OULAD Random Forest classification model
-│   ├── oulad_scaler_fixed.joblib     # OULAD StandardScaler object
-│   ├── axi_rf_model.joblib           # AXI Random Forest classification model
-│   └── axi_scaler.joblib             # AXI StandardScaler object
-│
-├── Training_Data/              # Dataset files and OULAD model training notebook
-│   ├── OULAD_Dataset1_Refactored.ipynb
-│   ├── assessments.csv, courses.csv, studentAssessment.csv,
-│   │   studentInfo.csv, studentRegistration.csv, vle.csv
-│   └── (studentVle.csv — excluded due to file size, downloadable separately)
-│
-├── AXI_Training/               # xAPI-Edu-Data training set and notebook
-│   ├── xAPI-Edu-Data.csv
-│   └── xAPI_Edu_Data_Optuna_+_Logistic_Regression(1) (1).ipynb
-│
-├── .gitignore                  # Git tracking exclusion configuration
-└── README.md                   # Primary repository documentation
-```
-
----
-
-## Machine Learning Layer
-
-The prediction subsystem consists of two pre-trained Random Forest models serialized with `joblib` and loaded during FastAPI backend initialization (`main.py` lifespan handler).
-
-> **Measured performance and caveats: [`docs/ml-evaluation.md`](docs/ml-evaluation.md).**
-> Held-out results — AXI: accuracy 0.792, ROC-AUC 0.922 (n=96). OULAD: accuracy 0.979,
-> ROC-AUC 0.994 (n=2,811) — **but the OULAD figure is inflated by target leakage**
-> (`Pass_rate` encodes course completion), so it must **not** be presented as
-> early-warning accuracy. Reproduce with `python scripts/evaluate_models.py`.
-
-### 1. OULAD Model — Student Risk Prediction
-
-Predicts whether a student is likely to pass or fail a course based on Virtual Learning Environment (VLE) interaction and non-exam assessment data.
-
-- **Dataset Source:** Open University Learning Analytics Dataset (OULAD).
-- **Target Leakage Prevention:** Final exam scores are explicitly excluded during feature engineering to ensure predictions rely solely on ongoing course metrics.
-- **Input Features (7):**
-  - `Weighted_grade`: Cumulative weighted assessment score prior to final exams.
-  - `Pass_rate`: Historical module pass rate.
-  - `Score_tma`: Average score on Tutor-Marked Assessments.
-  - `Score_cma`: Average score on Computer-Marked Assessments.
-  - `Sum_click`: Total count of VLE resource interactions.
-  - `Days_Active`: Count of unique active days on the VLE.
-  - `num_of_prev_attempts`: Count of prior attempts at the module.
-- **Output:** Binary classification (`1` for predicted pass, `0` for predicted failure) alongside class probability estimates.
-
-### 2. AXI Model — Behavioral Engagement Classification
-
-Classifies a student's behavioral engagement level into three categories.
-
-- **Dataset Source:** xAPI-Edu-Data dataset.
-- **Input Features (6):**
-  - `raised_hands`: Number of times the student raised their hand in class.
-  - `visited_resources`: Count of digital learning resource accesses.
-  - `announcements_view`: Count of announcement views.
-  - `discussion`: Count of discussion forum participations.
-  - `absence_days`: Categorical indicator (`Under-7` or `Above-7` days absent).
-  - `parent_satisfaction`: Categorical indicator (`Good` or `Bad`).
-- **Output:** Three-class classification (`H` for High, `M` for Medium, `L` for Low engagement) with per-class probabilities.
-
----
-
-## Chatbot Subsystem & Context Injection
-
-The chatbot implementation in `backend/routes/chatbot_routes.py` connects to the Groq API to query `llama-3.3-70b-versatile`.
-
-### Context Assembly Process
-
-1. **User Identity & Role Check:** Verifies JWT credentials and determines whether the requester is a Student or Lecturer.
-2. **Database Querying:** Retrieves student profile details, enrolled courses, historical grades, attendance records, stored ML prediction outputs, and behavioral attributes.
-3. **Course Material Text Extraction:** When querying within a course context, text content extracted from course materials (via `backend/utils/pdf_extractor.py`) is included in the system prompt payload.
-4. **LLM Query Dispatch:** Sends the structured system prompt and message history to the Groq client.
-5. **Fallback Mechanism:** If `GROQ_API_KEY` is undefined or blank in `.env`, the endpoint returns structured template fallback responses with a warning log, ensuring the backend remains functional without an API key.
-
----
-
-## Local Setup & Run Instructions
-
-### Prerequisites
-
-- Python 3.10–3.12 (3.12 recommended; `numpy==1.26.3` does not build on 3.13+)
-- Node.js 18 or higher
-- npm 9 or higher
-- A strong `JWT_SECRET` (≥ 16 chars) — the backend refuses to start without one
-
-### 1. Backend Setup
+Requires Python 3.12 and Node 24.
 
 ```bash
-# Navigate to backend directory
+git clone https://github.com/bahaaed07706/EduSmartAI.git
+cd EduSmartAI/BAHAAW
+```
+
+**Backend:**
+
+```bash
 cd backend
-
-# Create virtual environment
-python -m venv venv
-
-# Activate virtual environment
-# Windows PowerShell:
-.\venv\Scripts\Activate.ps1
-# macOS / Linux:
-source venv/bin/activate
-
-# Install required dependencies
+python -m venv venv && source venv/Scripts/activate
 pip install -r requirements.txt
-
-# Create environment configuration file
 cp .env.example .env
-# Edit backend/.env: set a strong JWT_SECRET (required) and an optional GROQ_API_KEY.
-# Generate a secret with:
-#   python -c "import secrets; print(secrets.token_urlsafe(48))"
-
-# Populate local database with seed data
-python seed_data.py
-
-# Apply the normalized schema (departments, semesters, notifications) and
-# backfill student/lecturer numbers, department links, and final grades.
-# This migration is additive and idempotent — safe to re-run.
-python migrate_schema.py
-
-# Start the FastAPI development server
-uvicorn main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-To run the backend tests: `pytest -q` (from the `backend` directory).
-
-FastAPI OpenAPI documentation is accessible at `http://localhost:8000/docs`.
-
-### 2. Frontend Setup
+Edit `.env` — the app will not start without a strong `JWT_SECRET`:
 
 ```bash
-# Navigate to frontend directory
-cd edusmartai-frontend
-
-# Create environment configuration file
-cp .env.example .env
-
-# Install frontend dependencies
-npm install
-
-# Start the React development server
-npm start
+python -c "import secrets; print(secrets.token_urlsafe(48))"
 ```
 
-The frontend application will be running at `http://localhost:3000`.
+Seeding a fresh database also requires `SEED_ADMIN_PASSWORD`,
+`SEED_LECTURER_PASSWORD` and `SEED_STUDENT_PASSWORD`, 12+ characters each.
+There are no default passwords, by design.
+
+```bash
+python migrate_schema.py
+python seed_data.py          # fresh databases only — never over existing data
+uvicorn main:app --reload
+```
+
+**Frontend:**
+
+```bash
+cd edusmartai-frontend
+npm ci
+REACT_APP_API_BASE_URL=http://127.0.0.1:8000 npm start
+```
+
+Health checks: `/health` for liveness, `/ready` to confirm the database responds
+and the models deserialised.
+
+## Documentation
+
+| Document | What it covers |
+|---|---|
+| [product-positioning.md](docs/product-positioning.md) | Who this is for; ready vs. roadmap |
+| [roadmap.md](docs/roadmap.md) | What is next, with effort and rationale |
+| [rag.md](docs/rag.md) | Retrieval design and evaluation |
+| [ml-evaluation.md](docs/ml-evaluation.md) | Model metrics and the leakage problem |
+| [security.md](docs/security.md) | Authorization model and audit findings |
+| [design-system.md](docs/design-system.md) | Tokens, components, accessibility rules |
+| [deployment-decision.md](docs/deployment-decision.md) | Why Render, and why not serverless |
+| [current-state.md](docs/current-state.md) | Verified state, branch, blockers |
+
+## Honest limitations
+
+- **Not yet deployed.** Architecture decided, configuration written, execution
+  pending.
+- **OULAD accuracy is leakage-inflated** and unusable for early prediction.
+- **LLM answer quality is unverified** — no API key has been available. Only the
+  retrieval layer and the local fallback are tested.
+- **The RAG evaluation set is 12 queries** — enough to demonstrate the
+  mechanism, not enough to claim retrieval quality.
+- **Accessibility covers 6 of 37 pages.** Those six pass cleanly; the rest are
+  unaudited.
+- **RTL is partial.** The interface uses logical properties but has no language
+  switcher, so full mirroring is unverified.
+- **Two moderate advisories remain** in `quill`/`react-quill`, needing a
+  breaking upgrade.
+- **PostgreSQL support is implemented but unexercised** against a real instance;
+  the test suite runs on SQLite.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). One rule up front: no change is "done"
+without evidence — a test, command output, or a screenshot.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
+
+## Author
+
+Built by [@bahaaed07706](https://github.com/bahaaed07706) as a graduation
+project.
 
 ---
 
-## Safety & Exclusion Policies
+<div dir="rtl">
 
-The following files and paths are excluded from version control via `.gitignore` to prevent secret leakage and keep the repository weight manageable:
+## نبذة بالعربية
 
-- `backend/.env` — Contains private keys and local configurations.
-- `backend/edusmart.db` — Local development database file.
-- `Training_Data/studentVle.csv` — Large dataset file (~454 MB); must be downloaded independently if re-running training notebooks.
-- `.claude/` — Local IDE settings.
-- `node_modules/`, `venv/`, `__pycache__/`, `build/`, `dist/` — Environment and build artifacts.
+**EduSmartAI** منصة لإدارة العملية الأكاديمية تساعد الجامعات على ملاحظة الطالب
+المتعثر بينما ما زال الوقت متاحًا لمساعدته.
 
----
+تجمع المنصة الحضور والدرجات ونتائج الاختبارات في سجل واحد لكل طالب، وتضيف إليه
+تصنيفًا لمستوى الخطر الأكاديمي، ومساعدًا ذكيًا يجيب من مواد المقرر المسجَّل فيه
+الطالب فقط — مع ذكر المصدر، ومع الامتناع عن الإجابة عند غياب دليل كافٍ.
 
-## Current Technical Limitations
+ثلاثة أدوار: **المشرف** يدير الهيكل الأكاديمي دون أن تُحذف السجلات نهائيًا،
+و**المحاضر** يدير مقرراته واختباراته وتقييماته، و**الطالب** يتابع سجله ويؤدي
+اختباراته ويقدّم تكليفاته.
 
-Stated honestly so the implemented scope is clear:
+**ملاحظة مهمة عن النتائج:** دقة نموذج OULAD البالغة 97.9% **مضخَّمة بسبب تسرّب
+الهدف (target leakage)**، ولا يصح تقديمها كتنبؤ مبكر موثوق. المشروع يوثّق هذا
+القيد بوضوح بدل إخفائه، وإصلاحه هو البند الأول في خطة التطوير.
 
-- **Quiz & assessment engine is implemented and tested** (interactive MCQ quizzes with server-side auto-grading; file-submission assessments with manual grading). Verified end-to-end in the browser (attempt → auto-save → submit → auto-graded result). Option correctness is never sent to students before they submit. Two lecturer/student API-client methods remain intentionally unused (no page calls them).
-- **Chatbot uses query-based retrieval (RAG) with source citations** — see [`docs/rag.md`](docs/rag.md). Retrieval is **lexical** (TF-IDF over character n-grams), not dense/semantic embeddings. Course-material access is authorization-filtered *before* ranking, so a student can only ever be grounded in materials from courses they are enrolled in. Measured recall@3 = 1.00, MRR = 1.00 on a small bilingual labelled set (n=5 — demonstrates the mechanism, not production-scale quality). It requires a valid `GROQ_API_KEY` (`gsk_...`) for LLM answers; without one it returns local, data-grounded fallback responses and never exposes configuration. **Live-provider answer quality and citation-following remain unverified** (no key available).
-- **Admin "delete" is non-destructive** — students/lecturers are deactivated, courses archived, enrollments withdrawn. Historical records (grades, attendance, features) are never physically removed.
-- **Design system & accessibility:** see [`docs/design-system.md`](docs/design-system.md). Tokens, shared primitives, mobile navigation, and AA contrast fixes are in place (Admin dashboard went from 8 measured contrast failures to 0). **WCAG 2.2 AA is targeted and materially improved, not formally certified** — audits covered representative pages per role, not all 37 routes, and no automated axe-core/Lighthouse run was performed. RTL logical properties are in place but there is no language switcher yet, so full RTL mirroring is unverified.
-- **Frontend dependency vulnerabilities:** `npm audit` reports 59 issues (2 critical, 29 high). **All trace to `react-scripts` (Create React App) build tooling** — `shell-quote`, `websocket-driver`, `@svgr/webpack`, `jest` — not to code shipped in the browser bundle. Note `react-scripts` is currently listed under `dependencies` instead of `devDependencies`, which is why build tooling appears even with `--omit=dev`. Fixing properly means migrating off CRA (e.g. to Vite); `npm audit fix --force` would break the verified build.
-- **Semester dates are not seeded.** The migration creates a `Fall 2024` semester without start/end dates; an admin can set them via the Semesters page.
-- **File-Based Database:** SQLite (`edusmart.db`), for local execution and demonstration, not high-concurrency production.
-- Uploaded files are served **only** through authenticated, ownership-checked, traversal-safe endpoints (`GET /files/{id}/download` for course materials, `GET /submissions/{id}/download` for assessment submissions). There is no open static mount.
-- Records created by automated E2E runs are flagged `is_test_data` rather than deleted, so demo data is never mistaken for real academic records.
-- **Dataset Exclusion:** the raw OULAD `studentVle.csv` (~454 MB) is excluded; download manually to retrain.
-- **Model version pinning:** models were trained with scikit-learn **1.7.2**; `requirements.txt` matches. AXI runtime uses argmax while the training notebook experimented with a P(H)≥threshold rule (a documented decision-policy difference, not a feature mismatch).
-- **Test Coverage:** 37 backend tests (auth/IDOR, admin/lecturer CRUD, data-protection, quiz/assessment engine, ML golden, chatbot eval). `pip-audit` and automated security-review diff extraction fail on non-ASCII paths — run them in CI or an ASCII path.
+الواجهة تعمل من 360 بكسل حتى 1440 بكسل دون أي مشكلة مقاسة، وتجتاز فحص إمكانية
+الوصول axe-core بصفر مخالفات على الصفحات المفحوصة.
 
----
-
-## Future Roadmap
-
-- **PostgreSQL Integration:** Replace SQLite with PostgreSQL for relational integrity and concurrent transaction support.
-- **Dockerization:** Add `Dockerfile` definitions and `docker-compose.yml` for unified multi-container orchestration.
-- **CI/CD Integration:** Implement GitHub Actions workflows for automated linting, type checking, and testing.
-- **Expanded Test Coverage:** Build comprehensive API integration test suites and frontend component tests.
-- **Vector Indexing:** Transition chatbot material context parsing to an indexed vector store.
-
----
-
-## Author & Project Information
-
-Developed as an AI and software engineering educational platform project demonstrating full-stack web development, machine learning model integration, and cloud LLM context injection.
+</div>
