@@ -208,7 +208,7 @@ Every number here comes from a command in this repository.
 
 | Check | Result |
 |---|---|
-| Backend tests | 99 passing, on Windows and Linux |
+| Backend tests | 103 passing, on Windows and Linux |
 | Lint (ruff) | clean |
 | Production build | compiles |
 | Accessibility (axe-core, WCAG 2.0/2.1/2.2 A+AA) | **0 violations**, 6 pages × 3 viewports |

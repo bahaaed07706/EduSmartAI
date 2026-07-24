@@ -108,12 +108,12 @@ contacting or not contacting a student. This is documented in
 
 **Within 10 seconds** — anyone landing on the repository should know: this is an
 academic management platform with retrieval-grounded AI assistance and academic
-risk prediction, built as a graduation project, with a live demo.
+risk prediction, built as a graduation project, with every claim evidenced.
 
 **Within 30 seconds:**
 
 - *Technical recruiter* — real stack (FastAPI, React, scikit-learn), real
-  verification (99 tests, CI green, 0 accessibility violations), and evidence
+  verification (103 tests, CI green, 0 accessibility violations), and evidence
   the author understands security rather than only features.
 - *Software engineer* — the architecture diagram, and that authorization is
   enforced per resource rather than per role.

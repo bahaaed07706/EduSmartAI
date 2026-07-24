@@ -8,9 +8,9 @@ appear here, only variable names.
 | | |
 |---|---|
 | Branch | `release/v1-hardening` |
-| HEAD (local == remote) | `a8e25ea` |
+| HEAD (local == remote) | `ae1231a` |
 | Pull request | https://github.com/bahaaed07706/EduSmartAI/pull/1 (open, mergeable) |
-| CI | green — 99 tests, ruff clean, build compiles |
+| CI | green — 103 tests, ruff clean, build compiles |
 | `main` | unchanged; merge blocked pending approval |
 | Deployment | not executed — no platform account connected |
 
@@ -111,7 +111,7 @@ curl https://<api>/health     # liveness
 curl https://<api>/ready      # database + models
 
 # Tests
-cd backend && python -m pytest -q          # expect 99 passed
+cd backend && python -m pytest -q          # expect 103 passed
 cd backend && python -m ruff check .
 cd edusmartai-frontend && CI=true npm run build
 
@@ -151,7 +151,7 @@ dashboard for an immediate rollback while the revert propagates.
 
 | Check | Result |
 |---|---|
-| Backend tests | 99 passed (Windows and ubuntu-latest) |
+| Backend tests | 103 passed (Windows and ubuntu-latest) |
 | ruff | clean |
 | Production build | compiles, 218 kB gzip |
 | axe-core WCAG 2.0/2.1/2.2 A+AA | 0 violations, 6 pages × 3 viewports |
@@ -191,7 +191,7 @@ dashboard for an immediate rollback while the revert propagates.
 ```bash
 git clone https://github.com/bahaaed07706/EduSmartAI.git
 cd EduSmartAI/BAHAAW
-git checkout a8e25ea
+git checkout ae1231a
 ```
 
 Then follow Quick start in [README.md](../README.md). Fresh-clone
