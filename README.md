@@ -12,10 +12,15 @@
 [![Node 24](https://img.shields.io/badge/node-24-green)](https://nodejs.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-lightgrey)](LICENSE)
 
-> **Live demo:** not yet deployed. The architecture is decided and the
-> deployment configuration is committed in [`render.yaml`](render.yaml) — see
-> [docs/deployment-decision.md](docs/deployment-decision.md). This README will
-> carry the URL once it is live and verified, not before.
+> **Live demo — partial.** The frontend is deployed to Vercel:
+> **https://edusmartai-frontend.vercel.app**. It renders the interface, but the
+> demo is **not yet functional end to end** — login, dashboards, quizzes and the
+> assistant all need the API, and the backend is not deployed yet (Render
+> provisioning is pending). Deployment configuration for both halves is
+> committed: [`render.yaml`](render.yaml) and
+> [`edusmartai-frontend/vercel.json`](edusmartai-frontend/vercel.json). See
+> [docs/deployment-decision.md](docs/deployment-decision.md). This note will be
+> updated to "fully live" once the backend is up and verified end to end.
 
 ---
 

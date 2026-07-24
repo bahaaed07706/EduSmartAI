@@ -11,8 +11,29 @@ appear here, only variable names.
 | HEAD (local == remote) | `ae1231a` |
 | Pull request | https://github.com/bahaaed07706/EduSmartAI/pull/1 (open, mergeable) |
 | CI | green — 103 tests, ruff clean, build compiles |
-| `main` | unchanged; merge blocked pending approval |
-| Deployment | not executed — no platform account connected |
+| `main` | merged — `0639a12` (local == remote) |
+| Release | [v1.0.0](https://github.com/bahaaed07706/EduSmartAI/releases/tag/v1.0.0) |
+| Frontend deploy | **live** — https://edusmartai-frontend.vercel.app (Vercel, production, Ready) |
+| Backend deploy | pending — Render needs an API key or a dashboard Blueprint (no device flow) |
+
+## Deployment status (live)
+
+**Frontend — done.** Deployed to Vercel production from `edusmartai-frontend/`.
+Public alias `edusmartai-frontend.vercel.app`, deployment id
+`dpl_8PUFkjaFz989EHcJRBih5HXw8e9R`. It serves the UI, but every data-backed
+screen needs the API, so it is not a working demo on its own. Once the backend
+is up, set `REACT_APP_API_BASE_URL` on the Vercel project to the Render origin
+and redeploy so the frontend actually talks to it.
+
+**Backend — pending.** Render has no browser device-authorization flow, so it
+cannot be connected the way Vercel was. It needs one of: a dashboard Blueprint
+(render.com → New → Blueprint → connect the repo), or a `RENDER_API_KEY`
+(Account Settings → API Keys) exported into the environment. Until then the
+demo cannot authenticate.
+
+> If opening the Vercel URL shows a Vercel login wall rather than the app,
+> Deployment Protection is on: Vercel project → Settings → Deployment
+> Protection → set production to public.
 
 ## Architecture
 
