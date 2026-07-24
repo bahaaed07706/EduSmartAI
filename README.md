@@ -58,11 +58,13 @@ Captured from the running application with synthetic demo data.
 |---|---|---|
 | ![Admin dashboard](docs/screenshots/admin-dashboard-1440.png) | ![Lecturer dashboard](docs/screenshots/lecturer-dashboard-1440.png) | ![Student dashboard](docs/screenshots/student-dashboard-1440.png) |
 
-At 390px — a designed mobile layout, not a compressed desktop one:
+At 390px — a designed mobile layout, not a compressed desktop one. The last
+image is the accessible navigation drawer (focus-trapped, Escape to close,
+backdrop dimming the page behind it):
 
-| Login | Student | Admin |
+| Login | Student | Navigation drawer |
 |---|---|---|
-| ![Login on mobile](docs/screenshots/login-390.png) | ![Student dashboard on mobile](docs/screenshots/student-dashboard-390.png) | ![Admin dashboard on mobile](docs/screenshots/admin-dashboard-390.png) |
+| ![Login on mobile](docs/screenshots/login-390.png) | ![Student dashboard on mobile](docs/screenshots/student-dashboard-390.png) | ![Mobile navigation drawer](docs/screenshots/mobile-navigation-390.png) |
 
 ## The AI assistant, and what "RAG" means here
 
