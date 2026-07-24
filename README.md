@@ -1,26 +1,33 @@
 <div align="center">
 
-<img src=".github/assets/logo.svg#gh-light-mode-only" alt="EduSmartAI" width="260">
-<img src=".github/assets/logo-dark.svg#gh-dark-mode-only" alt="EduSmartAI" width="260">
+<img src=".github/assets/logo.svg#gh-light-mode-only" alt="EduSmartAI" width="300">
+<img src=".github/assets/logo-dark.svg#gh-dark-mode-only" alt="EduSmartAI" width="300">
 
-**An academic management platform that helps universities notice a struggling student while there is still time to help them.**
+### Notice a struggling student while there is still time to help them.
+
+An academic management platform that brings attendance, grades and quiz results
+into one record per student — with a risk signal from a trained model and an
+assistant grounded in each student's own course material.
+
+[![Live frontend](https://img.shields.io/badge/Live_frontend-Vercel-000?logo=vercel)](https://edusmartai-frontend.vercel.app)
+&nbsp;[![Documentation](https://img.shields.io/badge/Documentation-docs-1d4ed8)](#documentation)
+&nbsp;[![Architecture](https://img.shields.io/badge/Architecture-diagram-0ea5e9)](#architecture)
+
+[![CI](https://github.com/bahaaed07706/EduSmartAI/actions/workflows/ci.yml/badge.svg)](https://github.com/bahaaed07706/EduSmartAI/actions/workflows/ci.yml)
+&nbsp;[![License: MIT](https://img.shields.io/badge/license-MIT-lightgrey)](LICENSE)
+&nbsp;![Python 3.12](https://img.shields.io/badge/python-3.12-blue)
+&nbsp;![Node 24](https://img.shields.io/badge/node-24-green)
+
+<br>
+
+<img src="docs/screenshots/student-dashboard-1440.png" alt="EduSmartAI student dashboard" width="900">
 
 </div>
 
-[![CI](https://github.com/bahaaed07706/EduSmartAI/actions/workflows/ci.yml/badge.svg)](https://github.com/bahaaed07706/EduSmartAI/actions/workflows/ci.yml)
-[![Python 3.12](https://img.shields.io/badge/python-3.12-blue)](https://www.python.org/)
-[![Node 24](https://img.shields.io/badge/node-24-green)](https://nodejs.org/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-lightgrey)](LICENSE)
-
-> **Live demo — partial.** The frontend is deployed to Vercel:
-> **https://edusmartai-frontend.vercel.app**. It renders the interface, but the
-> demo is **not yet functional end to end** — login, dashboards, quizzes and the
-> assistant all need the API, and the backend is not deployed yet (Render
-> provisioning is pending). Deployment configuration for both halves is
-> committed: [`render.yaml`](render.yaml) and
-> [`edusmartai-frontend/vercel.json`](edusmartai-frontend/vercel.json). See
-> [docs/deployment-decision.md](docs/deployment-decision.md). This note will be
-> updated to "fully live" once the backend is up and verified end to end.
+> **Deployment status:** the frontend is live on Vercel; the backend is not yet
+> provisioned, so the public URL currently renders the interface but cannot log
+> in. Run it locally in a few minutes with the [Quick start](#quick-start), or
+> follow [deployment](docs/deployment-decision.md) for the hosting plan.
 
 ---
 
@@ -50,21 +57,36 @@ class missed rather than only who scored badly.
 **Students** see their own record, attempt quizzes with immediate results,
 submit assessment files, and ask the assistant about their material.
 
-## Screenshots
+## Product tour
 
-Captured from the running application with synthetic demo data.
+Every image below is a real screenshot of the running application on synthetic
+demo data — no mockups.
 
-| Admin | Lecturer | Student |
-|---|---|---|
-| ![Admin dashboard](docs/screenshots/admin-dashboard-1440.png) | ![Lecturer dashboard](docs/screenshots/lecturer-dashboard-1440.png) | ![Student dashboard](docs/screenshots/student-dashboard-1440.png) |
+**Admin — the academic structure.** Departments, semesters, lecturers, students,
+courses and enrolments in one place, with guards that refuse to destroy records.
 
-At 390px — a designed mobile layout, not a compressed desktop one. The last
-image is the accessible navigation drawer (focus-trapped, Escape to close,
-backdrop dimming the page behind it):
+<img src="docs/screenshots/admin-dashboard-1440.png" alt="Admin dashboard" width="900">
 
-| Login | Student | Navigation drawer |
-|---|---|---|
-| ![Login on mobile](docs/screenshots/login-390.png) | ![Student dashboard on mobile](docs/screenshots/student-dashboard-390.png) | ![Mobile navigation drawer](docs/screenshots/mobile-navigation-390.png) |
+**Lecturer — teaching at a glance.** Each lecturer sees only their own courses,
+with attendance, grades, materials and quiz results.
+
+<img src="docs/screenshots/lecturer-dashboard-1440.png" alt="Lecturer dashboard" width="900">
+
+**Student — where they stand, and what to do next.** Grades, attendance,
+quizzes with immediate results, and the course assistant.
+
+<img src="docs/screenshots/student-dashboard-1440.png" alt="Student dashboard" width="900">
+
+### Built for the phone, not shrunk onto it
+
+A designed mobile layout at 390px, including the accessible navigation drawer
+(focus-trapped, Escape to close, backdrop dimming the page behind it).
+
+<p>
+  <img src="docs/screenshots/login-390.png" alt="Login on mobile" width="250">
+  <img src="docs/screenshots/student-dashboard-390.png" alt="Student dashboard on mobile" width="250">
+  <img src="docs/screenshots/mobile-navigation-390.png" alt="Mobile navigation drawer" width="250">
+</p>
 
 ## The AI assistant, and what "RAG" means here
 
@@ -235,14 +257,18 @@ Requires Python 3.12 and Node 24.
 
 ```bash
 git clone https://github.com/bahaaed07706/EduSmartAI.git
-cd EduSmartAI/BAHAAW
+cd EduSmartAI
 ```
 
 **Backend:**
 
 ```bash
 cd backend
-python -m venv venv && source venv/Scripts/activate
+python -m venv venv
+# Activate the virtual environment:
+#   Linux / macOS:   source venv/bin/activate
+#   Windows (PowerShell):  venv\Scripts\Activate.ps1
+#   Windows (Git Bash):    source venv/Scripts/activate
 pip install -r requirements.txt
 cp .env.example .env
 ```
@@ -263,7 +289,7 @@ python seed_data.py          # fresh databases only — never over existing data
 uvicorn main:app --reload
 ```
 
-**Frontend:**
+**Frontend** (from the repository root, in a second terminal):
 
 ```bash
 cd edusmartai-frontend

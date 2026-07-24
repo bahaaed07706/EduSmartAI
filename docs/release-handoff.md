@@ -208,7 +208,7 @@ dashboard for an immediate rollback while the revert propagates.
 
 ```bash
 git clone https://github.com/bahaaed07706/EduSmartAI.git
-cd EduSmartAI/BAHAAW
+cd EduSmartAI
 git checkout v1.0.0
 ```
 
