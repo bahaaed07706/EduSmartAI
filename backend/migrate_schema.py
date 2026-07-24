@@ -205,22 +205,41 @@ def _backfill(cur, dept_map: dict[str, int], semester_id: int) -> None:
     print("  backfill complete (student/lecturer numbers, dept links, semester, final grades)")
 
 
-def _create_orm_tables(db_path: Path) -> None:
-    """Create any tables declared in models.py that don't exist yet (quiz,
-    assessment, etc.). Uses SQLAlchemy create_all bound to the target file, so
-    the migration is self-sufficient even for brand-new model tables."""
+def _create_orm_tables(url: str) -> None:
+    """Create any table declared in models.py that does not exist yet.
+
+    Dialect-agnostic: `create_all` issues the right DDL for SQLite or Postgres
+    and never touches a table that already exists, so this is safe to re-run.
+    """
     from sqlalchemy import create_engine
-    engine = create_engine(f"sqlite:///{db_path}")
+
+    sys.path.insert(0, str(BASE_DIR))
+    import models  # noqa: F401  (registers every table on Base.metadata)
+
+    engine = create_engine(url)
     try:
-        import sys
-        sys.path.insert(0, str(BASE_DIR))
-        import models  # noqa: F401  (registers all tables on Base.metadata)
         models.Base.metadata.create_all(bind=engine)
     finally:
         engine.dispose()
 
 
+def _sqlite_path_from_url(url: str):
+    """Return the file path for a SQLite URL, or None for any other dialect."""
+    if not url.startswith("sqlite"):
+        return None
+    tail = url.split("///", 1)[-1] if "///" in url else ""
+    if not tail or tail == ":memory:":
+        return None
+    return Path(tail)
+
+
 def migrate(db_path: Path) -> None:
+    """Apply the legacy SQLite migration to an existing local database.
+
+    This is the pre-existing-database path: additive ALTER TABLE plus backfills
+    for rows that predate the newer columns. It requires the base tables to
+    already exist, which is why `run()` creates them first.
+    """
     print(f"Migrating: {db_path}")
     conn = sqlite3.connect(str(db_path))
     try:
@@ -238,11 +257,35 @@ def migrate(db_path: Path) -> None:
     finally:
         conn.close()
 
-    # Create any new ORM tables (quizzes, assessments, ...) additively.
-    _create_orm_tables(db_path)
-    print("ORM tables ensured (quiz/assessment engine).")
+
+def run(url: str) -> None:
+    """Bring any target database up to date, fresh or existing.
+
+    Ordering matters: the ORM tables are created FIRST. The legacy step below
+    runs `ALTER TABLE users ADD COLUMN ...`, which fails with "no such table:
+    users" on an empty database — exactly the state a new deployment starts in.
+
+    On a non-SQLite target (a deployed Postgres instance) `create_all` is the
+    whole migration. The legacy step is skipped because it exists only to
+    upgrade the historical local SQLite file; there is no such history in a
+    freshly provisioned database, and its raw sqlite3 calls would not apply.
+    """
+    _create_orm_tables(url)
+    print("ORM tables ensured.")
+
+    sqlite_path = _sqlite_path_from_url(url)
+    if sqlite_path is None:
+        print("Non-SQLite target: schema created; legacy SQLite backfill skipped.")
+        return
+
+    migrate(sqlite_path)
 
 
 if __name__ == "__main__":
-    target = sys.argv[1] if len(sys.argv) > 1 else str(BASE_DIR / "edusmart.db")
-    migrate(Path(target))
+    if len(sys.argv) > 1:
+        target_url = f"sqlite:///{sys.argv[1]}"
+    else:
+        from config import DATABASE_URL as _configured
+
+        target_url = _configured
+    run(target_url)
