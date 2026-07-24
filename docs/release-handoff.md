@@ -7,12 +7,12 @@ appear here, only variable names.
 
 | | |
 |---|---|
-| Branch | `release/v1-hardening` |
-| HEAD (local == remote) | `ae1231a` |
-| Pull request | https://github.com/bahaaed07706/EduSmartAI/pull/1 (open, mergeable) |
-| CI | green — 103 tests, ruff clean, build compiles |
-| `main` | merged — `0639a12` (local == remote) |
-| Release | [v1.0.0](https://github.com/bahaaed07706/EduSmartAI/releases/tag/v1.0.0) |
+| Branch | `main` (PR #1 merged) |
+| HEAD (local == remote) | `5faa757` |
+| Pull request | https://github.com/bahaaed07706/EduSmartAI/pull/1 — **MERGED** |
+| Merge commit | `0639a12` |
+| CI | green on `main` — 103 tests, ruff clean, build compiles |
+| Release | [v1.0.0](https://github.com/bahaaed07706/EduSmartAI/releases/tag/v1.0.0) → `0639a12` |
 | Frontend deploy | **live** — https://edusmartai-frontend.vercel.app (Vercel, production, Ready) |
 | Backend deploy | pending — Render needs an API key or a dashboard Blueprint (no device flow) |
 
@@ -155,13 +155,10 @@ broken record.
 
 ## Rollback
 
-`main` is unchanged until the merge lands, so the current rollback is simply not
-merging.
-
-After merge:
+PR #1 is merged (`0639a12`). To roll it back:
 
 ```bash
-git revert -m 1 <merge-sha>
+git revert -m 1 0639a12
 ```
 
 No migration is destructive — additive `ALTER TABLE ADD COLUMN` only — so a
@@ -212,7 +209,7 @@ dashboard for an immediate rollback while the revert propagates.
 ```bash
 git clone https://github.com/bahaaed07706/EduSmartAI.git
 cd EduSmartAI/BAHAAW
-git checkout ae1231a
+git checkout v1.0.0
 ```
 
 Then follow Quick start in [README.md](../README.md). Fresh-clone

@@ -1,43 +1,50 @@
 # EduSmartAI — current state
 
-Last verified: 2026-07-24
+Last verified: 2026-07-24 (post-merge, post-release)
 
 ## Branch and SHA
 
+PR #1 has been merged. Development is now on `main`.
+
 | | |
 |---|---|
-| Branch | `release/v1-hardening` |
-| HEAD (local == remote) | `abf747c23ba8e95a760cb3b3ee864e20b11bb310` |
-| Base | `main` (untouched, not merged) |
-| Pull request | https://github.com/bahaaed07706/EduSmartAI/pull/1 |
-| CI | **green** — both jobs, run `30053534105` |
+| Branch | `main` |
+| HEAD (local == remote) | `5faa757571a3a3886506540776036597a7ac7960` |
+| Merge commit | `0639a12` (squash of `release/v1-hardening`) |
+| Pull request | https://github.com/bahaaed07706/EduSmartAI/pull/1 — **MERGED** |
+| Release | [v1.0.0](https://github.com/bahaaed07706/EduSmartAI/releases/tag/v1.0.0) → `0639a12` |
+| CI | **green** on `main` |
 | Working tree | clean |
 
-## Commits on this branch
-
-12 commits ahead of `main`. Most recent first:
+## Commit history (most recent first)
 
 | SHA | Purpose |
 |---|---|
-| `abf747c` | CI: align frontend Node to 24 (lockfile mismatch), skip Chromium download |
-| `0f567e6` | Fix all 10 code-review findings |
-| `c40c942` | axe-core remediation, 26 violating nodes → 0 |
-| `1c5fa97` | npm dependency fix, 59 → 2 production advisories |
-| `b32af04`, `3aae14f`, `d36fd5d`, `531ea19`, `b1312c5`, `5c6549a`, `89f4614`, `85e6d54` | Earlier phases: RAG, ML evaluation, design system, quiz/assessment engine, data protection, P0 security |
+| `5faa757` | docs: mobile navigation drawer screenshot |
+| `1c95714` | docs: record the live Vercel frontend deployment |
+| `0639a12` | **merge** — Security, correctness and accessibility hardening (v1) |
+| `d4b8536` | initial commit |
+
+The squashed merge folded in: 10 code-review fixes, the fresh-database
+migration fix, the Vercel/Render deployment config, the quiz/assessment engine,
+genuine RAG, ML evaluation, the design system, and the P0 security fixes.
 
 ## Verification results
 
-All re-run at `abf747c`.
+All re-run at `5faa757` on 2026-07-24.
 
 | Gate | Result | Where |
 |---|---|---|
-| Backend tests | **94 passed** | locally (Windows) and CI (ubuntu-latest) |
-| ruff | clean | CI |
-| Production build | compiles, 218.63 kB gzip | CI |
-| axe-core | 0 violations, 6 pages × 3 viewports (360/768/1440) | local, `scripts/a11y-audit.js` |
-| npm audit `--omit=dev` | 2 moderate (quill, react-quill) | CI, non-blocking |
+| Backend tests | **103 passed** | locally (Windows) and CI (ubuntu-latest) |
+| ruff | clean | local + CI |
+| Production build | compiles, ~218 kB gzip | local + CI |
+| axe-core | 0 violations, 6 pages × 3 viewports | local, `scripts/a11y-audit.js` |
+| Responsive | 0 issues, 9 pages × 5 breakpoints (360–1440) | local, `scripts/responsive-audit.js` |
+| npm audit `--omit=dev` | 2 moderate (quill, react-quill) | local + CI, non-blocking |
 | Secret scan | clean; no `.env`, `.db`, uploads or backups tracked | local |
-| Migration idempotency | verified twice on a DB copy, 0 columns added on re-run | local |
+| Migration idempotency | verified fresh + twice on a DB copy, row counts preserved | local |
+| Frontend deploy | **live** — https://edusmartai-frontend.vercel.app (Vercel, production, Ready) | Vercel API |
+| Backend deploy | **pending** — Render not yet provisioned | — |
 | Row counts | unchanged: users=14, courses=4, enrollments=40, grades=240, attendances=560 | local |
 
 The Linux test run matters specifically: it is what proves the file-path fix,
@@ -114,34 +121,40 @@ distinct days at serving time but `max(date)` in training.
 3. **Live Groq quality unverified** — no API key. Only the local fallback path
    has been exercised.
 4. **`quill` / `react-quill`** — 2 moderate advisories needing a breaking upgrade.
-5. **Rate limiting and `/health` are not implemented** — both required before a
-   public demo.
+5. **PostgreSQL path unexercised against a real instance** — implemented
+   (`database.py` selects engine options per dialect), but the test suite runs
+   on SQLite.
 6. **a11y scope** — 6 representative pages, not all 37. No Lighthouse. RTL has no
    language switcher, so full mirroring is unverified.
 
+Rate limiting, security headers, `/health` and `/ready` are now implemented
+(`backend/main.py`), so the earlier "not implemented" note no longer applies.
+
 ## Exact next task
 
-Merge is gated on staging verification, which cannot run until the deployment
-account exists. In order:
+The backend is not yet deployed. In order:
 
-1. Owner provisions Render (or Railway) and authorises the GitHub repo.
-2. Implement the eight prerequisites in `docs/deployment-decision.md`
-   (Postgres, synthetic seed, uploads path, CORS, secrets, rate limiting,
-   health endpoint, credential rotation) on a separate deployment branch.
-3. Deploy staging from the PR branch, verify end to end from a clean browser.
-4. Only then merge PR #1 to `main`, and deploy production from `main`.
+1. Owner provisions Render — render.com → New → Blueprint → connect the repo →
+   Render reads `render.yaml` (Postgres 16 + 1 GB disk) → set the `sync:false`
+   env values (`CORS_ORIGINS` = the Vercel origin, three `SEED_*_PASSWORD`).
+2. Set `REACT_APP_API_BASE_URL` on the Vercel project to the Render origin and
+   redeploy the frontend so it talks to the API.
+3. Verify login/quiz/assessment/RAG end to end from a clean browser at
+   360/390/768/1024/1440.
+4. Rotate the previously committed demo passwords (still valid in the local DB
+   and in git history).
 
 ## Commands to resume safely
 
 ```bash
 git fetch --all --prune
-git switch release/v1-hardening
+git switch main
 git status                      # expect clean
-git rev-parse HEAD              # expect abf747c...
-gh pr view 1
-gh run list --branch release/v1-hardening --limit 1
+git rev-parse HEAD              # expect 5faa757...
+gh pr view 1                    # MERGED
+gh run list --branch main --limit 1
 
-cd backend && ./venv/Scripts/python.exe -m pytest -q     # expect 94 passed
+cd backend && ./venv/Scripts/python.exe -m pytest -q     # expect 103 passed
 cd backend && ./venv/Scripts/python.exe -m ruff check .  # expect clean
 cd edusmartai-frontend && CI=true npm run build          # expect compiled
 ```
