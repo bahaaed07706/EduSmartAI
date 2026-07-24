@@ -79,14 +79,29 @@ Railway is a drop-in substitute for this decision.
 
 ## Chosen architecture
 
+The two halves have genuinely different needs, so they are hosted differently.
+
 ```
-React static site  ──HTTPS──>  FastAPI web service  ──>  Postgres (managed)
-   (Render Static)              (Render Web Service)  ──>  Persistent disk
-                                                            (uploads)
+React static bundle  ──HTTPS──>  FastAPI web service  ──>  Postgres (managed)
+     (Vercel)                     (Render Web Service) ──>  Persistent disk
+                                                              (uploads)
 ```
 
-Rationale in one sentence: **the application writes to disk and holds a 14 MB
-model in memory, so it needs a persistent server, not a serverless function.**
+**Frontend on Vercel.** The build output is a 4.2 MB static bundle with no
+server-side rendering and no server-side needs at all. That is exactly what a
+CDN is for. Vercel also gives per-branch preview deployments for free, which is
+useful for reviewing UI changes before merge. Config:
+`edusmartai-frontend/vercel.json`.
+
+**Backend on Render.** Long-lived service, persistent disk, managed Postgres.
+Rationale in one sentence: **the API writes to disk and holds a 14 MB model in
+memory, so it needs a persistent server, not a serverless function.** Config:
+`render.yaml`.
+
+Splitting them means the frontend redeploys in seconds without restarting the
+API and reloading the model, and each side scales on its own terms. The cost is
+one extra moving part: CORS must name the Vercel origin explicitly, and the app
+refuses to boot in production if it is missing or a wildcard.
 
 ## Required changes before any public deploy
 

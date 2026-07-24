@@ -17,29 +17,53 @@ appear here, only variable names.
 ## Architecture
 
 ```
-React static site  ──HTTPS──>  FastAPI web service  ──>  PostgreSQL (managed)
-                                                     ──>  Persistent disk (uploads)
+React static bundle  ──HTTPS──>  FastAPI web service  ──>  PostgreSQL (managed)
+     (Vercel)                     (Render)             ──>  Persistent disk (uploads)
 ```
 
-Chosen because the backend writes to a database and an uploads directory on
-every request and holds a 14.3 MB model resident. Serverless would lose writes
-between invocations. Reasoning in [deployment-decision.md](deployment-decision.md).
+The backend needs a persistent server because it writes to a database and an
+uploads directory on every request and holds a 14.3 MB model resident;
+serverless would lose writes between invocations. The frontend is a static
+bundle, so it belongs on a CDN. Reasoning in
+[deployment-decision.md](deployment-decision.md).
 
-`render.yaml` at the repository root describes this as a Blueprint.
+Config lives in `render.yaml` (backend, database, disk) and
+`edusmartai-frontend/vercel.json` (frontend).
 
 ## Deployment procedure
 
-1. **Rotate credentials first.** The demo passwords committed earlier are in git
+**Order matters:** deploy the backend first, because the frontend needs its URL,
+and then set CORS to the frontend's URL once it exists.
+
+0. **Rotate credentials first.** The demo passwords committed earlier are in git
    history and in any database seeded with them. Treat as compromised.
-2. Render → New → Blueprint → connect `bahaaed07706/EduSmartAI`.
-3. Render reads `render.yaml` and provisions the database, the API service with
-   its disk, and the static site.
-4. Set the variables marked `sync: false` (below).
-5. First deploy runs `python migrate_schema.py` automatically, then starts
-   uvicorn.
-6. Seed synthetic demo data once: `python seed_data.py` from the service shell.
-7. Set `CORS_ORIGINS` to the static site's URL, then redeploy the API.
-8. Verify `/ready` returns 200 with `database: true` and `models: true`.
+
+**Backend — Render**
+
+1. Render → New → Blueprint → connect `bahaaed07706/EduSmartAI`.
+2. Render reads `render.yaml` and provisions the Postgres database and the API
+   service with its 1 GB disk.
+3. Set the variables marked `sync: false` (listed below).
+4. First deploy runs `python migrate_schema.py`, then starts uvicorn.
+5. Seed synthetic demo data once: `python seed_data.py` from the service shell.
+6. Verify `/ready` returns 200 with `database: true` and `models: true`.
+
+**Frontend — Vercel**
+
+7. Vercel → Add New Project → import `bahaaed07706/EduSmartAI`.
+8. Set **Root Directory** to `edusmartai-frontend`. Vercel then picks up
+   `vercel.json` (CRA preset, SPA rewrites, security headers, immutable caching
+   on hashed assets).
+9. Set `REACT_APP_API_BASE_URL` to the Render service origin — no trailing
+   slash, no path; the client appends `/api/v1` itself.
+10. Optionally set the `REACT_APP_DEMO_*` variables to surface demo logins.
+11. Deploy.
+
+**Connect the two**
+
+12. Back in Render, set `CORS_ORIGINS` to the exact Vercel production origin and
+    redeploy the API. The app refuses to boot in production on a wildcard.
+13. Confirm a login works end to end from the Vercel URL in a clean browser.
 
 ## Environment variables
 
