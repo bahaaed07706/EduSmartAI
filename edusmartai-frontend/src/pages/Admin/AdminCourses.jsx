@@ -320,13 +320,13 @@ const AdminCourses = () => {
             <LayoutTemplate className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary/80">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary-700">
               Admin · Curriculum
             </p>
             <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
               Courses
             </h2>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-600">
               Create and manage courses, assign lecturers, link semesters, and
               configure weekly schedules.
             </p>
@@ -394,7 +394,7 @@ const AdminCourses = () => {
               and weekly schedule.
             </p>
           </div>
-          <p className="text-[11px] text-slate-400">
+          <p className="text-[11px] text-slate-500">
             {courses.length} course{courses.length === 1 ? "" : "s"}
           </p>
         </div>
@@ -445,7 +445,7 @@ const AdminCourses = () => {
                 <tr>
                   <td
                     colSpan={7}
-                    className="py-4 px-3 text-center text-xs text-slate-400"
+                    className="py-4 px-3 text-center text-xs text-slate-500"
                   >
                     No courses found. Use{" "}
                     <span className="font-medium">New Course</span> to create
@@ -489,7 +489,7 @@ const AdminCourses = () => {
                             <span className="truncate">{scheduleLabel}</span>
                           </span>
                         ) : (
-                          <span className="text-slate-400">No schedule</span>
+                          <span className="text-slate-500">No schedule</span>
                         )}
                       </td>
                       <td className="py-2 px-3 text-right whitespace-nowrap space-x-1">
@@ -549,7 +549,7 @@ const AdminCourses = () => {
                   type="button"
                   onClick={closeFormModal}
                   disabled={saving}
-                  className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                  className="rounded-full p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -663,7 +663,7 @@ const AdminCourses = () => {
                         Schedule (Days &amp; Times)
                       </span>
                     </div>
-                    <span className="text-[11px] text-slate-400">
+                    <span className="text-[11px] text-slate-500">
                       Saved as JSON in <span className="font-mono">days_and_times</span>
                     </span>
                   </div>
@@ -759,7 +759,7 @@ const AdminCourses = () => {
                     </div>
 
                     <div className="pt-2 border-t border-slate-200">
-                      <p className="text-[11px] text-slate-400">
+                      <p className="text-[11px] text-slate-500">
                         Will be saved as:
                       </p>
                       <div className="mt-1 text-[11px] font-mono bg-white rounded-md border border-slate-200 px-2 py-1 break-all">

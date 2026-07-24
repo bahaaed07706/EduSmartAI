@@ -180,7 +180,7 @@ const AdminStudentDetails = () => {
                 <UserCircle2 className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary/80">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary-700">
                   Student #{student?.id}
                 </p>
                 <h1 className="text-base font-semibold tracking-tight text-slate-900">
@@ -212,7 +212,7 @@ const AdminStudentDetails = () => {
             <button
               type="button"
               onClick={handleClose}
-              className="ml-3 flex h-8 w-8 items-center justify-center rounded-full text-sm text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+              className="ml-3 flex h-8 w-8 items-center justify-center rounded-full text-sm text-slate-500 hover:bg-slate-100 hover:text-slate-700"
               aria-label="Close"
             >
               ✕

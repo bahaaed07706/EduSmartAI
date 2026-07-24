@@ -38,7 +38,7 @@ const ConfirmDialog = ({
           <button
             type="button"
             onClick={onCancel}
-            className="flex h-7 w-7 items-center justify-center rounded-full text-sm text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+            className="flex h-7 w-7 items-center justify-center rounded-full text-sm text-slate-500 hover:bg-slate-100 hover:text-slate-700"
           >
             ✕
           </button>

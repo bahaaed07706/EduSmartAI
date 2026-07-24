@@ -1,28 +1,53 @@
-import React from "react";
+import React, { useId } from "react";
 
-const Input = ({ label, error, helperText, className = "", ...props }) => {
+/**
+ * Accessible text input.
+ *
+ * WCAG: the label is programmatically associated with the control (1.3.1 / 3.3.2),
+ * validation errors are announced via aria-describedby + role="alert" (3.3.1),
+ * and invalid state is exposed with aria-invalid (4.1.2). Focus styling is
+ * inherited from the global :focus-visible ring so it is consistent app-wide.
+ */
+const Input = ({ label, error, helperText, className = "", id, ...props }) => {
+  const generatedId = useId();
+  const inputId = id || `input-${generatedId}`;
+  const errorId = `${inputId}-error`;
+  const helperId = `${inputId}-helper`;
   const hasError = Boolean(error);
+  const describedBy = hasError ? errorId : helperText ? helperId : undefined;
 
   return (
     <div className="space-y-1.5">
       {label && (
-        <label className="block text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+        <label
+          htmlFor={inputId}
+          className="block text-[11px] font-semibold uppercase tracking-[0.16em] text-muted"
+        >
           {label}
         </label>
       )}
       <input
-        className={`w-full rounded-lg border bg-slate-50/60 px-3 py-1.5 text-sm shadow-inner focus:bg-white focus:outline-none focus:ring-1 ${
+        id={inputId}
+        aria-invalid={hasError || undefined}
+        aria-describedby={describedBy}
+        className={`w-full rounded-md border bg-slate-50/60 px-3 py-2 text-sm shadow-inner focus:bg-white ${
           hasError
-            ? "border-rose-300 focus:border-rose-400 focus:ring-rose-300/70"
-            : "border-slate-200 focus:border-primary focus:ring-primary/40"
+            ? "border-danger"
+            : "border-slate-200 focus:border-primary"
         } ${className}`}
         {...props}
       />
-      {helperText && !error && (
-        <p className="text-[11px] text-slate-400">{helperText}</p>
+      {helperText && !hasError && (
+        <p id={helperId} className="text-[11px] text-muted">
+          {helperText}
+        </p>
       )}
       {hasError && (
-        <p className="text-[11px] text-rose-600 bg-rose-50 border border-rose-200 rounded px-2 py-1">
+        <p
+          id={errorId}
+          role="alert"
+          className="text-[11px] text-danger bg-danger-bg border border-danger/30 rounded px-2 py-1"
+        >
           {error}
         </p>
       )}

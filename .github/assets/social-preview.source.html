@@ -1,0 +1,71 @@
+<meta charset="utf-8">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    width:1280px; height:640px;
+    font-family: "Segoe UI", ui-sans-serif, Inter, Helvetica, Arial, sans-serif;
+    background:#0b1220;
+    color:#e2e8f0;
+    position:relative;
+    overflow:hidden;
+  }
+  /* Restrained depth: one soft radial, no gradient soup. */
+  .glow { position:absolute; border-radius:50%; filter:blur(90px); }
+  .g1 { width:620px; height:620px; background:rgba(29,78,216,.28); right:-160px; top:-220px; }
+  .g2 { width:420px; height:420px; background:rgba(14,165,233,.16); left:-140px; bottom:-200px; }
+  /* Faint grid = data clarity, not decoration. */
+  .grid {
+    position:absolute; inset:0;
+    background-image:linear-gradient(rgba(148,163,184,.06) 1px, transparent 1px),
+                     linear-gradient(90deg, rgba(148,163,184,.06) 1px, transparent 1px);
+    background-size:64px 64px;
+  }
+  .wrap { position:relative; padding:74px 82px; height:100%; display:flex; flex-direction:column; }
+  .brand { display:flex; align-items:center; gap:16px; margin-bottom:44px; }
+  .mark { width:56px; height:56px; border-radius:14px; background:#1d4ed8;
+          display:flex; align-items:center; justify-content:center; }
+  .brandname { font-size:26px; font-weight:650; letter-spacing:-.4px; color:#f8fafc; }
+  h1 { font-size:60px; line-height:1.1; font-weight:680; letter-spacing:-1.6px;
+       color:#f8fafc; max-width:940px; }
+  h1 em { font-style:normal; color:#60a5fa; }
+  p.sub { margin-top:26px; font-size:25px; line-height:1.5; color:#94a3b8; max-width:820px; }
+  .facts { margin-top:auto; display:flex; gap:14px; flex-wrap:wrap; }
+  .chip { border:1px solid rgba(148,163,184,.26); background:rgba(15,23,42,.5);
+          border-radius:999px; padding:11px 20px; font-size:18px; color:#cbd5e1; }
+  .chip b { color:#f8fafc; font-weight:640; }
+  .stack { position:absolute; right:82px; bottom:74px; font-size:17px;
+           color:#64748b; text-align:right; line-height:1.6; }
+</style>
+<div class="glow g1"></div>
+<div class="glow g2"></div>
+<div class="grid"></div>
+
+<div class="wrap">
+  <div class="brand">
+    <div class="mark">
+      <svg width="34" height="34" viewBox="0 0 40 40" fill="none" stroke="#fff"
+           stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 28V14a.8.8 0 0 1 1.1-.7L19 17v14l-9.9-2.3A.8.8 0 0 1 8 28Z"/>
+        <path d="M30 28V14a.8.8 0 0 0-1.1-.7L19 17v14l9.9-2.3A.8.8 0 0 0 30 28Z"/>
+        <path d="M23 14.5v-3M27 14.5V8" stroke="#7dd3fc"/>
+      </svg>
+    </div>
+    <div class="brandname">EduSmartAI</div>
+  </div>
+
+  <h1>Notice a struggling student <em>while there is still time.</em></h1>
+
+  <p class="sub">
+    Attendance, grades and quiz results in one record — with retrieval-grounded
+    answers from a student's own course material.
+  </p>
+
+  <div class="facts">
+    <div class="chip"><b>103</b> tests passing</div>
+    <div class="chip"><b>0</b> axe-core violations</div>
+    <div class="chip">Responsive <b>360–1440</b></div>
+    <div class="chip">Citations &amp; <b>abstention</b></div>
+  </div>
+
+  <div class="stack">FastAPI &middot; React 18 &middot; scikit-learn<br>SQLAlchemy 2 &middot; TF-IDF retrieval</div>
+</div>

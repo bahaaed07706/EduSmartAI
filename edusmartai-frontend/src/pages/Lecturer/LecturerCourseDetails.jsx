@@ -240,7 +240,7 @@ const LecturerCourseDetails = () => {
             <span className="text-base">👥</span>
             <span>Students in course</span>
           </h3>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-slate-600">
             Full roster of students registered in this course.
           </p>
         </div>
@@ -289,7 +289,7 @@ const LecturerCourseDetails = () => {
                       <span>{s.final_grade}</span>
                     </span>
                   ) : (
-                    <span className="text-[11px] text-slate-400">—</span>
+                    <span className="text-[11px] text-slate-500">—</span>
                   )}
                 </td>
               </tr>
@@ -298,12 +298,12 @@ const LecturerCourseDetails = () => {
               <tr>
                 <td
                   colSpan={4}
-                  className="px-3 py-6 text-center text-sm text-slate-400"
+                  className="px-3 py-6 text-center text-sm text-slate-500"
                 >
                   <div className="flex flex-col items-center gap-1">
                     <span className="text-lg">📭</span>
                     <span>No students enrolled yet.</span>
-                    <span className="text-[11px] text-slate-400">
+                    <span className="text-[11px] text-slate-500">
                       Once students register for this course, they will appear
                       here.
                     </span>
@@ -325,13 +325,13 @@ const LecturerCourseDetails = () => {
       <div className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary/80">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary-700">
               Course cockpit
             </p>
             <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
               {courseTitle}
             </h2>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-600">
               Manage assessments, attendance, materials and students from a
               single view.
             </p>

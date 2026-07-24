@@ -145,13 +145,13 @@ const AdminDepartments = () => {
             <Building2 className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary/80">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary-700">
               Admin · Structure
             </p>
             <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
               Departments
             </h2>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-600">
               Manage your university departments, their codes, and names.
             </p>
           </div>
@@ -202,7 +202,7 @@ const AdminDepartments = () => {
               View, edit, or remove departments from the system.
             </p>
           </div>
-          <p className="text-[11px] text-slate-400">
+          <p className="text-[11px] text-slate-500">
             {departments.length} total
           </p>
         </div>
@@ -240,7 +240,7 @@ const AdminDepartments = () => {
               ) : departments.length === 0 ? (
                 <tr>
                   <td
-                    className="py-4 px-3 text-center text-xs text-slate-400"
+                    className="py-4 px-3 text-center text-xs text-slate-500"
                     colSpan={4}
                   >
                     No departments yet. Use{" "}
@@ -311,7 +311,7 @@ const AdminDepartments = () => {
                   type="button"
                   onClick={closeFormModal}
                   disabled={saving}
-                  className="rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                  className="rounded-full p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
                 >
                   <X className="h-4 w-4" />
                 </button>

@@ -26,8 +26,9 @@ const useNotifications = () => {
       setError("");
       const data = await notificationApi.getMyNotifications({ limit: 50 });
       setNotifications(data || []);
-    } catch (err) {
-      console.error("Failed to fetch notifications", err);
+    } catch {
+      // Background poll: surface via the `error` state (shown in the UI), but
+      // do not spam the console on transient network blips.
       setError("Failed to load notifications");
     } finally {
       setLoading(false);

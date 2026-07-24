@@ -291,7 +291,7 @@ const StudentQuizPage = () => {
     return (
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div className="space-y-1">
-          <p className="text-xs uppercase tracking-wide text-primary/70 font-semibold">
+          <p className="text-xs uppercase tracking-wide text-primary-700 font-semibold">
             Quiz
           </p>
           <h1 className="text-2xl md:text-3xl font-semibold text-slate-900">
@@ -331,7 +331,7 @@ const StudentQuizPage = () => {
           This quiz is currently{" "}
           <span className="font-semibold">{summary.status}</span>.
         </p>
-        <p className="mt-1 text-xs text-slate-500">
+        <p className="mt-1 text-xs text-slate-600">
           You will be able to access it once it becomes active.
         </p>
       </Card>
@@ -501,7 +501,7 @@ const StudentQuizPage = () => {
             <p className="text-xs font-semibold text-slate-700">
               Question Navigator
             </p>
-            <div className="flex items-center gap-1 text-[10px] text-slate-400">
+            <div className="flex items-center gap-1 text-[10px] text-slate-500">
               <span className="inline-flex h-3 w-3 rounded-full bg-emerald-500/80" />
               <span>Answered</span>
               <span className="inline-flex h-3 w-3 rounded-full bg-slate-300 ml-2" />
@@ -533,7 +533,7 @@ const StudentQuizPage = () => {
             })}
           </div>
 
-          <p className="text-[10px] text-slate-400 mt-1">
+          <p className="text-[10px] text-slate-500 mt-1">
             Tap a number to jump directly to that question.
           </p>
         </Card>

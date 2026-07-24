@@ -50,7 +50,13 @@ const Topbar = () => {
   return (
     <header className="relative flex h-16 items-center justify-between border-b border-slate-200 bg-white/95 px-4 shadow-sm sm:px-6">
       <div className="flex items-center gap-3">
-        <div className="hidden sm:flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 text-sm font-semibold text-primary">
+        {/* axe: text-primary on bg-primary/10 measured 4.18:1 (needs 4.5).
+            primary-700 on the same tint clears AA. Decorative mark — hidden
+            from assistive tech since the app name is already announced. */}
+        <div
+          aria-hidden="true"
+          className="hidden sm:flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 text-sm font-semibold text-primary-700"
+        >
           ES
         </div>
         <div>
@@ -71,6 +77,13 @@ const Topbar = () => {
           <div className="relative">
             <button
               onClick={handleToggleNotifications}
+              type="button"
+              aria-label={
+                unreadCount > 0
+                  ? `Notifications, ${unreadCount} unread`
+                  : "Notifications"
+              }
+              aria-expanded={isNotifOpen}
               className="relative flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white hover:bg-slate-50 transition focus:outline-none focus:ring-2 focus:ring-primary/40"
             >
               <svg

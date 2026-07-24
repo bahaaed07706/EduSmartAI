@@ -146,7 +146,7 @@ const StudentChatbotDrawer = () => {
         {/* header */}
         <div className="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
           <div>
-            <p className="text-xs uppercase tracking-wide text-primary/70 font-semibold">
+            <p className="text-xs uppercase tracking-wide text-primary-700 font-semibold">
               EduSmartAI Assistant
             </p>
             <p className="text-[11px] text-slate-500">
@@ -220,7 +220,7 @@ const StudentChatbotDrawer = () => {
             placeholder="Ask about your courses, grades, attendance, or how to improve..."
           />
           <div className="flex items-center justify-between gap-2">
-            <p className="text-[10px] text-slate-400">
+            <p className="text-[10px] text-slate-500">
               Enter to send, Shift+Enter for a new line.
             </p>
             <Button size="sm" onClick={sendMessage} disabled={loading}>

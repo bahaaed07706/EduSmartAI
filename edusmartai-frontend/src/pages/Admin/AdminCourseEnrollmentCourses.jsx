@@ -53,13 +53,13 @@ const AdminCourseEnrollmentCourses = () => {
             <LayoutTemplate className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary/80">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary-700">
               Admin · Enrollments
             </p>
             <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
               Course Enrollments
             </h2>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-600">
               Pick a course to manage which students are enrolled. To edit
               course details or semester, use the{" "}
               <button

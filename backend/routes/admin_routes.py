@@ -1,7 +1,6 @@
 # routes/admin_routes.py - مسارات المشرف مع بيانات كاملة
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
 from database import get_db
 from auth import get_admin, hash_password
 import models
@@ -156,48 +155,10 @@ def delete_user(user_id: int, current_user: models.User = Depends(get_admin), db
     return {"message": "User deleted"}
 
 
-@router.get("/courses")
-def get_all_courses(current_user: models.User = Depends(get_admin), db: Session = Depends(get_db)):
-    """جميع المقررات"""
-    courses = db.query(models.Course).all()
-    result = []
-    for c in courses:
-        lecturer_name = None
-        if c.lecturer_id:
-            lecturer = db.query(models.User).filter(models.User.id == c.lecturer_id).first()
-            lecturer_name = lecturer.name if lecturer else None
-        
-        student_count = db.query(models.Enrollment).filter(models.Enrollment.course_id == c.id).count()
-        
-        result.append({
-            "id": c.id,
-            "name": c.name,
-            "code": c.code,
-            "lecturer_id": c.lecturer_id,
-            "lecturer_name": lecturer_name,
-            "student_count": student_count
-        })
-    return result
-
-
-@router.post("/courses")
-def create_course(course_data: schemas.CourseCreate, current_user: models.User = Depends(get_admin), db: Session = Depends(get_db)):
-    """إنشاء مقرر"""
-    existing = db.query(models.Course).filter(models.Course.code == course_data.code).first()
-    if existing:
-        raise HTTPException(status_code=400, detail="Course code already exists")
-    
-    new_course = models.Course(
-        name=course_data.name,
-        code=course_data.code,
-        description=course_data.description,
-        lecturer_id=course_data.lecturer_id
-    )
-    db.add(new_course)
-    db.commit()
-    db.refresh(new_course)
-    
-    return {"message": "Course created", "id": new_course.id}
+# NOTE: GET/POST /admin/courses are now served by admin_crud_routes.py with the
+# normalized rich shape the frontend expects (course_code, department_id,
+# semester_id, days_and_times, …). The older minimal versions were removed to
+# avoid a route collision.
 
 
 @router.post("/enrollments")

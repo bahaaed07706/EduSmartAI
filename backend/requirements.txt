@@ -7,10 +7,18 @@ passlib[bcrypt]==1.7.4
 python-multipart==0.0.6
 pydantic==2.5.3
 pydantic-settings==2.1.0
+# Postgres driver for deployed environments. Local development still uses
+# SQLite; database.py selects engine options per dialect, so installing this
+# changes nothing until DATABASE_URL points at Postgres.
+psycopg[binary]==3.2.3
+
 joblib==1.3.2
 pandas==2.1.4
 numpy==1.26.3
-scikit-learn==1.4.0
+# Must match the scikit-learn version the .joblib models were trained with
+# (Saved_Models/*.joblib were pickled with 1.7.2). A mismatch triggers
+# InconsistentVersionWarning and risks silently wrong predictions.
+scikit-learn==1.7.2
 
 # AI Chatbot
 openai==1.6.1

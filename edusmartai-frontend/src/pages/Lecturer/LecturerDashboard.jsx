@@ -88,7 +88,7 @@ const LecturerDashboard = () => {
       <div className="min-h-[calc(100vh-64px)] bg-gradient-to-b from-slate-50 via-slate-50 to-slate-100 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm">
-            <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
+            <Loader2 className="h-5 w-5 animate-spin text-slate-500" />
           </div>
           <p className="text-sm text-slate-500">Loading your dashboard...</p>
         </div>
@@ -163,7 +163,7 @@ const LecturerDashboard = () => {
               <p className="text-2xl font-semibold text-primary">
                 {totalCourses}
               </p>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-slate-500">
                 All courses assigned to you in the system.
               </p>
             </div>
@@ -183,7 +183,7 @@ const LecturerDashboard = () => {
               <p className="text-base font-semibold text-slate-800">
                 {semesterLabel}
               </p>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-slate-500">
                 Based on semester dates linked to your courses.
               </p>
             </div>
@@ -203,7 +203,7 @@ const LecturerDashboard = () => {
               <p className="text-2xl font-semibold text-slate-800">
                 {currentSemesterCoursesCount}
               </p>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-slate-500">
                 Your teaching load for the active semester.
               </p>
             </div>
@@ -237,7 +237,7 @@ const LecturerDashboard = () => {
               </li>
               <li>• Share course materials like slides and notes.</li>
             </ul>
-            <p className="mt-3 text-[11px] text-slate-400">
+            <p className="mt-3 text-[11px] text-slate-500">
               Tip: Open a course from{" "}
               <span className="font-semibold">My Courses</span> to manage
               everything related to it from one place.

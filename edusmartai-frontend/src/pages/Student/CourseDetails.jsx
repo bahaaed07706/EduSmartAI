@@ -676,7 +676,7 @@ const CourseDetails = () => {
                   <tr>
                     <td
                       colSpan={2}
-                      className="py-2 text-center text-slate-400 bg-white"
+                      className="py-2 text-center text-slate-500 bg-white"
                     >
                       No attendance records yet.
                     </td>
@@ -834,7 +834,7 @@ const CourseDetails = () => {
                         {formatDateTime(a.end_date)}
                       </span>
                     </span>
-                    <span className="text-slate-400">
+                    <span className="text-slate-500">
                       Max: {a.max_marks}
                     </span>
                   </div>
@@ -1102,14 +1102,14 @@ const CourseDetails = () => {
               <BookOpen className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <p className="text-xs uppercase tracking-wide text-primary/70 font-semibold">
+              <p className="text-xs uppercase tracking-wide text-primary-700 font-semibold">
                 {course.course_code}
               </p>
               <h2 className="text-2xl md:text-3xl font-semibold text-slate-900">
                 {course.name}
               </h2>
               {course.lecturer_name && (
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs text-slate-600">
                   Taught by{" "}
                   <span className="font-medium">{course.lecturer_name}</span>
                 </p>

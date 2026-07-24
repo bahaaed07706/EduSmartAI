@@ -170,13 +170,13 @@ const AdminSemesters = () => {
         </div>
         <div className="flex items-start gap-3">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary/80">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary-700">
               Admin · Academic
             </p>
             <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
               Semesters
             </h2>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-600">
               Configure academic semesters with names, years, and date ranges.
             </p>
           </div>
@@ -227,7 +227,7 @@ const AdminSemesters = () => {
               See all defined semesters with their academic year and duration.
             </p>
           </div>
-          <p className="text-[11px] text-slate-400">
+          <p className="text-[11px] text-slate-500">
             {semesters.length} semester{semesters.length === 1 ? "" : "s"}
           </p>
         </div>
@@ -274,7 +274,7 @@ const AdminSemesters = () => {
                 <tr>
                   <td
                     colSpan={6}
-                    className="py-4 px-3 text-center text-xs text-slate-400"
+                    className="py-4 px-3 text-center text-xs text-slate-500"
                   >
                     No semesters yet. Use{" "}
                     <span className="font-medium">New Semester</span> to create
@@ -359,7 +359,7 @@ const AdminSemesters = () => {
                   type="button"
                   onClick={closeFormModal}
                   disabled={saving}
-                  className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                  className="rounded-full p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -383,7 +383,7 @@ const AdminSemesters = () => {
                     }
                     placeholder="e.g. 2025 Spring"
                     prefixIcon={
-                      <CalendarDays className="h-4 w-4 text-slate-400" />
+                      <CalendarDays className="h-4 w-4 text-slate-500" />
                     }
                   />
                   <Input
@@ -394,7 +394,7 @@ const AdminSemesters = () => {
                     onChange={(e) =>
                       setForm((f) => ({ ...f, year: e.target.value }))
                     }
-                    prefixIcon={<Clock className="h-4 w-4 text-slate-400" />}
+                    prefixIcon={<Clock className="h-4 w-4 text-slate-500" />}
                   />
                 </div>
 
@@ -433,7 +433,7 @@ const AdminSemesters = () => {
                   </div>
                 </div>
 
-                <p className="text-[11px] text-slate-400">
+                <p className="text-[11px] text-slate-500">
                   Make sure semester dates do not overlap with other existing
                   semesters in your academic calendar.
                 </p>

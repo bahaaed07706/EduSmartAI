@@ -186,13 +186,13 @@ const LecturerCourseStudents = () => {
             {/* Header */}
             <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary/80">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary-700">
                         إدخال البيانات والتنبؤ - Data Entry & Prediction
                     </p>
                     <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
                         طلاب المقرر مع التنبؤات الذكية
                     </h2>
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-xs text-slate-600">
                         أدخل خصائص الطالب (OULAD + AXI) واحصل على نتائج التنبؤ
                     </p>
                 </div>
@@ -238,7 +238,7 @@ const LecturerCourseStudents = () => {
                                 </div>
                             ))}
                             {students.length === 0 && (
-                                <p className="text-center text-sm text-slate-400 py-8">لا يوجد طلاب مسجلين</p>
+                                <p className="text-center text-sm text-slate-500 py-8">لا يوجد طلاب مسجلين</p>
                             )}
                         </div>
                     )}
@@ -278,7 +278,7 @@ const LecturerCourseStudents = () => {
                                                     احتمالية النجاح: <strong>{((selectedStudent.oulad_prediction.probability || 0) * 100).toFixed(1)}%</strong>
                                                 </p>
                                             </div>
-                                        ) : <p className="text-sm text-slate-400">لا توجد بيانات - أدخل الخصائص للتنبؤ</p>}
+                                        ) : <p className="text-sm text-slate-500">لا توجد بيانات - أدخل الخصائص للتنبؤ</p>}
                                     </div>
 
                                     <div className="rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 p-4 border border-purple-100">
@@ -292,7 +292,7 @@ const LecturerCourseStudents = () => {
                                                     <span>H: {((selectedStudent.axi_prediction.prob_h || 0) * 100).toFixed(0)}%</span>
                                                 </div>
                                             </div>
-                                        ) : <p className="text-sm text-slate-400">لا توجد بيانات - أدخل الخصائص للتنبؤ</p>}
+                                        ) : <p className="text-sm text-slate-500">لا توجد بيانات - أدخل الخصائص للتنبؤ</p>}
                                     </div>
                                 </div>
                             )}
@@ -452,7 +452,7 @@ const LecturerCourseStudents = () => {
                         <div className="flex flex-col items-center justify-center py-16 text-center">
                             <span className="text-4xl mb-3">👆</span>
                             <p className="text-sm text-slate-500">اختر طالباً من القائمة لإدخال خصائصه</p>
-                            <p className="text-xs text-slate-400 mt-1">Select a student to enter features and get AI predictions</p>
+                            <p className="text-xs text-slate-500 mt-1">Select a student to enter features and get AI predictions</p>
                         </div>
                     )}
                 </Card>

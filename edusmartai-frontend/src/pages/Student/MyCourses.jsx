@@ -235,13 +235,13 @@ const MyCourses = () => {
                 Quick search
               </span>
               <div className="relative">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
                 <input
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search by name, code, department..."
-                  className="w-full rounded-full border border-slate-200 bg-white/80 pl-9 pr-3 py-1.5 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="w-full rounded-full border border-slate-200 bg-white/80 pl-9 pr-3 py-1.5 text-xs sm:text-sm text-slate-800 placeholder:text-slate-500 shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                 />
               </div>
             </label>
@@ -260,7 +260,7 @@ const MyCourses = () => {
               <p className="text-sm font-semibold text-slate-800">
                 No courses to show
               </p>
-              <p className="mt-1 text-xs text-slate-500 max-w-md">
+              <p className="mt-1 text-xs text-slate-600 max-w-md">
                 You don’t have any courses in the selected semester or matching
                 your search. Try clearing the search, or choose a different
                 semester from your dashboard.
@@ -302,7 +302,7 @@ const MyCourses = () => {
                         <BookOpen className="h-4 w-4 text-primary" />
                       </div>
                       <div>
-                        <p className="text-[11px] font-semibold text-primary/80 tracking-[0.12em] uppercase">
+                        <p className="text-[11px] font-semibold text-primary-700 tracking-[0.12em] uppercase">
                           {courseCode}
                         </p>
                         <h3 className="text-sm sm:text-base font-semibold text-slate-900 line-clamp-2">
@@ -313,7 +313,7 @@ const MyCourses = () => {
 
                     {semesterLabel && (
                       <span className="inline-flex items-center rounded-full bg-slate-50 px-2.5 py-1 text-[10px] font-medium text-slate-600 border border-slate-200 whitespace-nowrap">
-                        <Calendar className="mr-1 h-3 w-3 text-slate-400" />
+                        <Calendar className="mr-1 h-3 w-3 text-slate-500" />
                         {semesterLabel}
                       </span>
                     )}
@@ -322,7 +322,7 @@ const MyCourses = () => {
                   {/* Department */}
                   {departmentName && (
                     <div className="flex items-center gap-1.5 text-xs text-slate-600">
-                      <Building2 className="h-3.5 w-3.5 text-slate-400" />
+                      <Building2 className="h-3.5 w-3.5 text-slate-500" />
                       <span className="font-medium">Department:</span>
                       <span className="truncate">{departmentName}</span>
                     </div>
@@ -331,7 +331,7 @@ const MyCourses = () => {
                   {/* Schedule */}
                   {scheduleText && (
                     <div className="flex items-start gap-1.5 text-[11px] text-slate-600">
-                      <Calendar className="mt-0.5 h-3.5 w-3.5 text-slate-400" />
+                      <Calendar className="mt-0.5 h-3.5 w-3.5 text-slate-500" />
                       <div>
                         <span className="font-medium">Schedule: </span>
                         <span className="break-words">{scheduleText}</span>

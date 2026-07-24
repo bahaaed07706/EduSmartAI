@@ -1,0 +1,4 @@
+# Audit tooling is a devDependency of this package but is never needed by the
+# Vercel build. Excluding it keeps the deployment lean.
+node_modules
+build

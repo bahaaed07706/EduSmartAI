@@ -269,13 +269,13 @@ const LecturerCourseGrades = () => {
             <BarChart3 className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary/80">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary-700">
               {course.course_code} · Course #{courseId}
             </p>
             <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
               {course.name} – Grades
             </h2>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-600">
               Enter <span className="font-semibold">midterm ({MAX_MID})</span>,{" "}
               <span className="font-semibold">
                 participation ({MAX_PARTICIPATION})
@@ -473,7 +473,7 @@ const LecturerCourseGrades = () => {
                             <span>count: {row.assess_count}</span>
                           </div>
                         ) : (
-                          <span className="text-[11px] text-slate-400">
+                          <span className="text-[11px] text-slate-500">
                             No assessment stats yet
                           </span>
                         )}

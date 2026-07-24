@@ -304,7 +304,7 @@ const LecturerCourseAttendance = () => {
             <CalendarDays className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary/80">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary-700">
               Course #{courseId}
             </p>
             <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
@@ -312,7 +312,7 @@ const LecturerCourseAttendance = () => {
                 ? `${courseMeta.course_code} – ${courseMeta.name} – Attendance`
                 : "Attendance"}
             </h2>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-600">
               Mark attendance for each session and track overall presence for
               your students across the semester.
             </p>
@@ -350,7 +350,7 @@ const LecturerCourseAttendance = () => {
             <CheckCircle2 className="h-4 w-4 text-primary" />
             Mark Attendance
           </h3>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-slate-600">
             Choose a scheduled class session, then set each student&apos;s
             status. Existing records are pre-filled and can be updated at any
             time.
@@ -376,7 +376,7 @@ const LecturerCourseAttendance = () => {
                     </option>
                   ))}
                 </select>
-                <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-400 text-xs">
+                <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-500 text-xs">
                   ▼
                 </span>
               </div>
@@ -396,7 +396,7 @@ const LecturerCourseAttendance = () => {
               </div>
             )}
             {loadingDay && (
-              <span className="mt-1 text-[11px] text-slate-400">
+              <span className="mt-1 text-[11px] text-slate-500">
                 Loading statuses for this date...
               </span>
             )}
@@ -474,7 +474,7 @@ const LecturerCourseAttendance = () => {
                 <tr>
                   <td
                     colSpan={3}
-                    className="py-4 text-center text-sm text-slate-400"
+                    className="py-4 text-center text-sm text-slate-500"
                   >
                     No students enrolled.
                   </td>
@@ -548,7 +548,7 @@ const LecturerCourseAttendance = () => {
                 <tr>
                   <td
                     colSpan={7}
-                    className="py-4 text-center text-sm text-slate-400"
+                    className="py-4 text-center text-sm text-slate-500"
                   >
                     No students enrolled.
                   </td>

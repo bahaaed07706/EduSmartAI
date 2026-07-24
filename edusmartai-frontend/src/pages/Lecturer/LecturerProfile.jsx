@@ -44,7 +44,7 @@ const LecturerProfile = () => {
       <div className="space-y-6">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <p className="text-xs font-medium tracking-wide text-primary/70 uppercase">
+            <p className="text-xs font-medium tracking-wide text-primary-700 uppercase">
               Lecturer dashboard
             </p>
             <h1 className="mt-1 text-2xl font-semibold text-slate-900">
@@ -141,7 +141,7 @@ const LecturerProfile = () => {
       {/* Page header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold tracking-[0.16em] text-primary/80 uppercase">
+          <p className="text-xs font-semibold tracking-[0.16em] text-primary-700 uppercase">
             Lecturer dashboard
           </p>
           <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
@@ -312,7 +312,7 @@ const LecturerProfile = () => {
                   <span className="text-base">📚</span>
                   <h3>My Courses</h3>
                 </div>
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs text-slate-600">
                   A quick view of the courses you are teaching this semester.
                 </p>
               </div>
@@ -376,7 +376,7 @@ const LecturerProfile = () => {
                             </span>
                           </div>
                         ) : (
-                          <span className="text-[11px] text-slate-400">
+                          <span className="text-[11px] text-slate-500">
                             Not scheduled
                           </span>
                         )}
@@ -388,12 +388,12 @@ const LecturerProfile = () => {
                     <tr>
                       <td
                         colSpan={4}
-                        className="py-6 text-center text-sm text-slate-400"
+                        className="py-6 text-center text-sm text-slate-500"
                       >
                         <div className="flex flex-col items-center gap-1">
                           <span className="text-lg">📭</span>
                           <span>No courses assigned yet.</span>
-                          <span className="text-[11px] text-slate-400">
+                          <span className="text-[11px] text-slate-500">
                             Once you are assigned to courses, they will appear
                             here automatically.
                           </span>

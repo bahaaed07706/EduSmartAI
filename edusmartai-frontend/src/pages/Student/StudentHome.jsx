@@ -275,7 +275,7 @@ const StudentHome = () => {
               <GraduationCap className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-primary/80 font-semibold">
+              <p className="text-xs uppercase tracking-[0.16em] text-primary-700 font-semibold">
                 Welcome back
               </p>
               <h1 className="mt-1 text-xl sm:text-2xl font-semibold text-slate-900">
@@ -291,10 +291,14 @@ const StudentHome = () => {
               {/* Semester filter UI */}
               {semesters.length > 0 && (
                 <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <span className="text-[11px] text-slate-500">
+                  {/* slate-500 on this tinted panel measured 4.34:1 at 11px,
+                      marginally under AA; slate-600 clears it. */}
+                  <span className="text-[11px] text-slate-600">
                     Showing courses for:
                   </span>
+                  {/* axe select-name: adjacent text is not a programmatic label. */}
                   <select
+                    aria-label="Filter courses by semester"
                     className="text-xs border border-slate-200 rounded-full px-3 py-1 bg-white/80 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     value={selectedSemesterId || ""}
                     onChange={handleSemesterChange}
@@ -359,7 +363,7 @@ const StudentHome = () => {
               <p className="mt-1 text-2xl font-semibold text-primary">
                 {profile?.gpa != null ? Number(profile.gpa).toFixed(2) : "--"}
               </p>
-              <p className="mt-1 text-[11px] text-slate-400">
+              <p className="mt-1 text-[11px] text-slate-500">
                 Overall GPA in the system.
               </p>
             </div>
@@ -379,7 +383,7 @@ const StudentHome = () => {
               <p className="mt-1 text-base font-semibold text-slate-900">
                 {currentSemesterLabel}
               </p>
-              <p className="mt-1 text-[11px] text-slate-400">
+              <p className="mt-1 text-[11px] text-slate-500">
                 Active semester linked to your enrollments.
               </p>
             </div>
@@ -399,7 +403,7 @@ const StudentHome = () => {
               <p className="mt-1 text-2xl font-semibold text-slate-900">
                 {activeCoursesCount}
               </p>
-              <p className="mt-1 text-[11px] text-slate-400">
+              <p className="mt-1 text-[11px] text-slate-500">
                 Enrolled for the selected semester.
               </p>
             </div>
@@ -462,7 +466,7 @@ const StudentHome = () => {
                             <BookOpen className="h-4 w-4 text-primary" />
                           </div>
                           <div>
-                            <p className="text-[10px] font-semibold text-primary/80 tracking-[0.12em] uppercase">
+                            <p className="text-[10px] font-semibold text-primary-700 tracking-[0.12em] uppercase">
                               {courseCode}
                             </p>
                             <p className="text-sm font-semibold text-slate-900 line-clamp-2">
@@ -474,7 +478,7 @@ const StudentHome = () => {
 
                       {departmentName && (
                         <div className="flex items-center gap-1.5 text-[11px] text-slate-600">
-                          <Building2 className="h-3.5 w-3.5 text-slate-400" />
+                          <Building2 className="h-3.5 w-3.5 text-slate-500" />
                           <span className="font-medium">Department:</span>
                           <span className="truncate">{departmentName}</span>
                         </div>

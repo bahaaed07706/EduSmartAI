@@ -201,7 +201,7 @@ const LecturerCourseList = () => {
       <div className="space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold tracking-[0.16em] text-primary/80 uppercase">
+            <p className="text-xs font-semibold tracking-[0.16em] text-primary-700 uppercase">
               Lecturer workspace
             </p>
             <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
@@ -243,7 +243,7 @@ const LecturerCourseList = () => {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold tracking-[0.16em] text-primary/80 uppercase">
+          <p className="text-xs font-semibold tracking-[0.16em] text-primary-700 uppercase">
             Lecturer workspace
           </p>
           <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
@@ -271,9 +271,12 @@ const LecturerCourseList = () => {
               <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
                 🎓 Semester
               </span>
-              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 shadow-sm">
+              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 shadow-sm">
+                {/* min-h-[24px] meets WCAG 2.2 SC 2.5.8 Target Size (Minimum).
+                    Measured at 69x18 on a 360px viewport before this. */}
                 <select
-                  className="bg-transparent text-xs font-medium text-slate-800 focus:outline-none"
+                  aria-label="Filter courses by semester"
+                  className="min-h-[24px] bg-transparent text-xs font-medium text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                   value={selectedSemesterId || ""}
                   onChange={handleSemesterChange}
                 >
@@ -286,7 +289,7 @@ const LecturerCourseList = () => {
               </div>
             </>
           ) : (
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-slate-500">
               No semesters found for your account.
             </span>
           )}
@@ -391,7 +394,7 @@ const LecturerCourseList = () => {
 
                 {/* Actions */}
                 <div className="mt-4 flex items-center justify-between gap-2 border-t border-dashed border-slate-200 pt-3">
-                  <div className="flex items-center gap-1 text-[11px] text-slate-400">
+                  <div className="flex items-center gap-1 text-[11px] text-slate-500">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                     <span>Teaching course</span>
                   </div>

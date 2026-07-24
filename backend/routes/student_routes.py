@@ -1,11 +1,9 @@
 # routes/student_routes.py - مسارات الطالب
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
 from database import get_db
-from auth import get_current_user, get_student
+from auth import get_student
 import models
-import schemas
 
 router = APIRouter(prefix="/students", tags=["Students"])
 
@@ -146,36 +144,57 @@ def get_my_features(
     }
 
 
+def _parse_legacy_semester(raw: str, fallback_id: int) -> dict:
+    """Best-effort parse of a legacy semester string like 'Fall 2024' or '2024-1'."""
+    name, year = "Fall", 2024
+    if raw:
+        tokens = raw.replace("-", " ").split()
+        for t in tokens:
+            if t.isdigit():
+                if len(t) == 4:
+                    year = int(t)
+                elif t == "1":
+                    name = "Fall"
+                elif t == "2":
+                    name = "Spring"
+            elif t.isalpha():
+                name = t
+    return {"id": fallback_id, "name": name, "year": year, "label": f"{name} {year}"}
+
+
 @router.get("/me/semesters")
 def get_my_semesters(current_user: models.User = Depends(get_student), db: Session = Depends(get_db)):
-    """الحصول على الفصول الدراسية"""
+    """الحصول على الفصول الدراسية للطالب من جدول الفصول أو من قيم التسجيل القديمة."""
     enrollments = db.query(models.Enrollment).filter(
         models.Enrollment.student_id == current_user.id
     ).all()
-    
-    semester_set = list(set([e.semester for e in enrollments]))
-    
-    # Return proper semester objects with IDs
-    semesters = []
-    for i, sem in enumerate(semester_set):
-        parts = sem.split("-") if sem else ["2024", "1"]
-        year = parts[0] if len(parts) > 0 else "2024"
-        term = parts[1] if len(parts) > 1 else "1"
-        name = "Fall" if term == "1" else "Spring" if term == "2" else f"Term {term}"
-        semesters.append({
-            "id": i + 1,
-            "name": name,
-            "year": int(year),
-            "label": f"{name} {year}"
-        })
-    
-    return semesters if semesters else [{"id": 1, "name": "Fall", "year": 2024, "label": "Fall 2024"}]
+
+    # Prefer normalized Semester records linked via enrollment.semester_id.
+    semester_ids = {e.semester_id for e in enrollments if e.semester_id}
+    if semester_ids:
+        rows = db.query(models.Semester).filter(models.Semester.id.in_(semester_ids)).all()
+        return [
+            {"id": s.id, "name": s.name, "year": s.year, "label": f"{s.name} {s.year}"}
+            for s in rows
+        ]
+
+    # Fallback: parse legacy string values safely (never crash on non-numeric).
+    legacy = list({e.semester for e in enrollments if e.semester})
+    if legacy:
+        return [_parse_legacy_semester(raw, i + 1) for i, raw in enumerate(legacy)]
+
+    return [{"id": 1, "name": "Fall", "year": 2024, "label": "Fall 2024"}]
 
 
 @router.get("/me/semesters/current")
-def get_current_semester(current_user: models.User = Depends(get_student)):
-    """الفصل الدراسي الحالي"""
-    return {"id": 1, "name": "Spring", "year": 2025, "is_current": True}
+def get_current_semester(current_user: models.User = Depends(get_student), db: Session = Depends(get_db)):
+    """الفصل الدراسي الحالي (من جدول الفصول إن وُجد)."""
+    current = db.query(models.Semester).filter(models.Semester.is_current == 1).first()
+    if not current:
+        current = db.query(models.Semester).order_by(models.Semester.id.desc()).first()
+    if current:
+        return {"id": current.id, "name": current.name, "year": current.year, "is_current": True}
+    return {"id": 1, "name": "Fall", "year": 2024, "is_current": True}
 
 
 @router.get("/me/courses/{course_id}/materials")
@@ -196,15 +215,30 @@ def get_course_materials(
     
     materials = db.query(models.CourseMaterial).filter(
         models.CourseMaterial.course_id == course_id
-    ).all()
-    
+    ).order_by(models.CourseMaterial.id).all()
+
+    import json
+    from pathlib import Path as _P
+
+    def _files(m):
+        if m.files_json:
+            try:
+                data = json.loads(m.files_json)
+                if isinstance(data, list):
+                    return data
+            except (ValueError, TypeError):
+                pass
+        if m.file_url:
+            return [{"id": m.id, "file_name": _P(m.file_url).name, "file_url": m.file_url}]
+        return []
+
     return [
         {
             "id": m.id,
             "title": m.title,
             "description": m.description,
-            "file_url": m.file_url,
-            "created_at": str(m.created_at) if m.created_at else None
+            "uploaded_at": m.created_at.isoformat() if m.created_at else None,
+            "files": _files(m),
         }
         for m in materials
     ]
@@ -313,34 +347,41 @@ def get_course_assessments(
     current_user: models.User = Depends(get_student),
     db: Session = Depends(get_db)
 ):
-    """قائمة التقييمات للطالب في مقرر معين"""
+    """Assessments for the student in a course, with their submission status."""
     enrollment = db.query(models.Enrollment).filter(
         models.Enrollment.student_id == current_user.id,
         models.Enrollment.course_id == course_id
     ).first()
-    
+
     if not enrollment:
         raise HTTPException(status_code=404, detail="Not enrolled in this course")
-    
-    # جمع الدرجات كتقييمات
-    grades = db.query(models.Grade).filter(
-        models.Grade.student_id == current_user.id,
-        models.Grade.course_id == course_id
-    ).all()
-    
-    return [
-        {
-            "id": g.id,
-            "type": g.assessment_type,
-            "title": f"{g.assessment_type} Assessment",
-            "score": g.score,
-            "max_score": g.max_score,
-            "submitted": True,
-            "graded": True,
-            "created_at": str(g.created_at) if g.created_at else None
-        }
-        for g in grades
-    ]
+
+    assessments = db.query(models.Assessment).filter(
+        models.Assessment.course_id == course_id
+    ).order_by(models.Assessment.id).all()
+
+    out = []
+    for a in assessments:
+        sub = db.query(models.Submission).filter(
+            models.Submission.assessment_id == a.id,
+            models.Submission.student_id == current_user.id,
+        ).first()
+        out.append({
+            "id": a.id,
+            "type": a.type,
+            "title": a.title,
+            "description": a.description,
+            "start_date": a.start_date.isoformat() if a.start_date else None,
+            "end_date": a.end_date.isoformat() if a.end_date else None,
+            "max_marks": a.max_marks,
+            "weight_from_participation": a.weight_from_participation,
+            "file_url": a.file_url,
+            "submitted": sub is not None,
+            "submission_file_url": sub.file_url if sub else None,
+            "marks_obtained": sub.marks_obtained if sub else None,
+            "feedback": sub.feedback if sub else None,
+        })
+    return out
 
 
 @router.get("/me/courses/{course_id}/attendance")

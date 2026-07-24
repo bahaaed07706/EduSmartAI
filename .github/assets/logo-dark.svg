@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 48" width="220" height="48" role="img" aria-label="EduSmartAI">
+  <!-- Mark: an open book whose pages rise into a progress step, i.e. learning
+       that moves forward. Two tones only, from the product's primary ramp. -->
+  <g fill="none" stroke="#1d4ed8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 34V14a1 1 0 0 1 1.4-.9L20 18v20l-12.6-4.1A1 1 0 0 1 6 34Z"/>
+    <path d="M34 34V14a1 1 0 0 0-1.4-.9L20 18v20l12.6-4.1A1 1 0 0 0 34 34Z"/>
+  </g>
+  <path d="M25 15.5v-4M30 15.5V8M35 15.5V4" stroke="#0ea5e9" stroke-width="3" stroke-linecap="round"/>
+  <text x="48" y="31" font-family="ui-sans-serif,Segoe UI,Inter,Helvetica,Arial,sans-serif"
+        font-size="21" font-weight="650" fill="#f1f5f9" letter-spacing="-0.3">Edu<tspan fill="#1d4ed8">Smart</tspan>AI</text>
+</svg>

@@ -10,13 +10,76 @@ Complete lecturer routes matching frontend lecturerApi.js expectations:
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from datetime import date
 from database import get_db
 from auth import get_lecturer
 import models
 import schemas
 
 router = APIRouter(prefix="/lecturers", tags=["Lecturers"])
+
+
+def _require_owned_course(course_id: int, current_user: models.User, db: Session) -> models.Course:
+    """Return the course only if the current lecturer teaches it, else 403/404.
+
+    Centralizes the ownership check so a lecturer can never read or modify a
+    course they do not teach (prevents cross-lecturer IDOR).
+    """
+    course = db.query(models.Course).filter(models.Course.id == course_id).first()
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+    if course.lecturer_id != current_user.id:
+        raise HTTPException(status_code=403, detail="You don't teach this course")
+    return course
+
+
+# Grade summary maps three headline grades to Grade rows by assessment_type.
+_MID_TYPE = "Midterm"
+_PARTICIPATION_TYPE = "Participation"
+_FINAL_TYPE = "Final"
+_SUMMARY_TYPES = {_MID_TYPE, _PARTICIPATION_TYPE, _FINAL_TYPE}
+
+
+def _grade_summary_row(db: Session, course_id: int, student: models.User) -> dict:
+    """Build the per-student grade-summary row the LecturerCourseGrades page reads."""
+    grades = db.query(models.Grade).filter(
+        models.Grade.student_id == student.id,
+        models.Grade.course_id == course_id,
+    ).all()
+
+    by_type = {g.assessment_type: g.score for g in grades}
+    mid = by_type.get(_MID_TYPE)
+    participation = by_type.get(_PARTICIPATION_TYPE)
+    final_exam = by_type.get(_FINAL_TYPE)
+
+    parts = [v for v in (mid, participation, final_exam) if v is not None]
+    total = sum(parts) if parts else None
+
+    # Continuous-assessment stats (everything that is not one of the 3 headline types)
+    assess_scores = [g.score for g in grades if g.assessment_type not in _SUMMARY_TYPES]
+    if assess_scores:
+        assess_avg = sum(assess_scores) / len(assess_scores)
+        assess_stats = {
+            "assess_avg": assess_avg,
+            "assess_max": max(assess_scores),
+            "assess_min": min(assess_scores),
+            "assess_sum": sum(assess_scores),
+            "assess_count": len(assess_scores),
+        }
+    else:
+        assess_stats = {"assess_avg": None, "assess_max": None, "assess_min": None,
+                        "assess_sum": None, "assess_count": 0}
+
+    return {
+        "student_id": student.id,
+        "student_number": student.student_number,
+        "name": student.name,
+        "email": student.email,
+        "mid_grade": mid,
+        "participation_grade": participation,
+        "final_exam_grade": final_exam,
+        "total_grade": total,
+        **assess_stats,
+    }
 
 
 # ============ Profile Endpoints ============
@@ -158,19 +221,17 @@ def get_course_overview(
     db: Session = Depends(get_db)
 ):
     """نظرة عامة على المقرر"""
-    course = db.query(models.Course).filter(models.Course.id == course_id).first()
-    if not course:
-        raise HTTPException(status_code=404, detail="Course not found")
-    
+    course = _require_owned_course(course_id, current_user, db)
+
     enrollments = db.query(models.Enrollment).filter(
         models.Enrollment.course_id == course_id
     ).all()
-    
+
     at_risk = 0
     success = 0
     total_grade = 0
     count = 0
-    
+
     for e in enrollments:
         features = db.query(models.StudentFeature).filter(
             models.StudentFeature.student_id == e.student_id,
@@ -184,13 +245,32 @@ def get_course_overview(
             if features.weighted_grade:
                 total_grade += features.weighted_grade
                 count += 1
-    
+
+    sem = db.query(models.Semester).filter(models.Semester.id == course.semester_id).first() if course.semester_id else None
+    semester_out = {
+        "name": sem.name, "year": sem.year,
+        "start_date": str(sem.start_date) if sem.start_date else None,
+        "end_date": str(sem.end_date) if sem.end_date else None,
+    } if sem else None
+
+    attendance_records_count = db.query(models.Attendance).filter(
+        models.Attendance.course_id == course_id
+    ).count()
+
     return {
-        "course": {"id": course.id, "name": course.name, "code": course.code},
+        "course": {
+            "id": course.id, "name": course.name, "code": course.code,
+            "course_code": course.code, "department_id": course.department_id,
+            "semester_id": course.semester_id, "days_and_times": course.days_and_times,
+        },
+        "semester": semester_out,
+        "days_and_times": course.days_and_times,
         "students_count": len(enrollments),
         "at_risk_count": at_risk,
         "success_count": success,
-        "average_grade": total_grade / count if count > 0 else 0
+        "average_grade": total_grade / count if count > 0 else 0,
+        "avg_final_grade": (total_grade / count) if count > 0 else None,
+        "attendance_records_count": attendance_records_count,
     }
 
 
@@ -201,14 +281,12 @@ def get_course_students(
     db: Session = Depends(get_db)
 ):
     """قائمة طلاب المقرر مع بيانات كاملة - للـ Frontend"""
-    course = db.query(models.Course).filter(models.Course.id == course_id).first()
-    if not course:
-        raise HTTPException(status_code=404, detail="Course not found")
-    
+    _require_owned_course(course_id, current_user, db)  # authorization side-effect
+
     enrollments = db.query(models.Enrollment).filter(
         models.Enrollment.course_id == course_id
     ).all()
-    
+
     students = []
     for enrollment in enrollments:
         student = db.query(models.User).filter(models.User.id == enrollment.student_id).first()
@@ -217,11 +295,13 @@ def get_course_students(
                 models.StudentFeature.student_id == student.id,
                 models.StudentFeature.course_id == course_id
             ).first()
-            
+
             students.append({
                 "id": student.id,
+                "student_number": student.student_number,
                 "name": student.name,
                 "email": student.email,
+                "final_grade": enrollment.final_grade,
                 "age": student.age,
                 "gender": "ذكر" if student.gender == "male" else "أنثى" if student.gender == "female" else None,
                 "city": student.city,
@@ -266,38 +346,159 @@ def get_course_grades(
     current_user: models.User = Depends(get_lecturer),
     db: Session = Depends(get_db)
 ):
-    """درجات طلاب المقرر"""
-    course = db.query(models.Course).filter(models.Course.id == course_id).first()
-    if not course:
-        raise HTTPException(status_code=404, detail="Course not found")
-    
+    """درجات طلاب المقرر - grade summary per student (mid/participation/final)."""
+    _require_owned_course(course_id, current_user, db)
+
     enrollments = db.query(models.Enrollment).filter(
         models.Enrollment.course_id == course_id
     ).all()
-    
+
     grades_list = []
     for enrollment in enrollments:
         student = db.query(models.User).filter(models.User.id == enrollment.student_id).first()
         if student:
-            grades = db.query(models.Grade).filter(
-                models.Grade.student_id == student.id,
-                models.Grade.course_id == course_id
-            ).all()
-            
-            features = db.query(models.StudentFeature).filter(
-                models.StudentFeature.student_id == student.id,
-                models.StudentFeature.course_id == course_id
-            ).first()
-            
-            grades_list.append({
-                "student_id": student.id,
-                "student_name": student.name,
-                "grades": [{"type": g.assessment_type, "score": g.score, "max": g.max_score} for g in grades],
-                "weighted_grade": features.weighted_grade if features else None,
-                "prediction": "ناجح" if features and features.prediction == 1 else "معرض للخطر" if features and features.prediction == 0 else None
-            })
-    
+            grades_list.append(_grade_summary_row(db, course_id, student))
+
     return grades_list
+
+
+# ============ Attendance (summary / by-date / bulk) ============
+
+@router.get("/courses/{course_id}/attendance/summary")
+def attendance_summary(
+    course_id: int,
+    current_user: models.User = Depends(get_lecturer),
+    db: Session = Depends(get_db),
+):
+    """Per-student attendance counts + rate (0-100) for the whole course."""
+    _require_owned_course(course_id, current_user, db)
+    enrollments = db.query(models.Enrollment).filter(
+        models.Enrollment.course_id == course_id
+    ).all()
+
+    out = []
+    for e in enrollments:
+        records = db.query(models.Attendance).filter(
+            models.Attendance.student_id == e.student_id,
+            models.Attendance.course_id == course_id,
+        ).all()
+        present = sum(1 for a in records if a.status == "present")
+        absent = sum(1 for a in records if a.status == "absent")
+        late = sum(1 for a in records if a.status == "late")
+        total = len(records)
+        rate = round((present / total) * 100, 1) if total else None
+        out.append({
+            "student_id": e.student_id, "present": present, "absent": absent,
+            "late": late, "total": total, "attendance_rate": rate,
+        })
+    return out
+
+
+@router.get("/courses/{course_id}/attendance/by-date")
+def attendance_by_date(
+    course_id: int,
+    date: str,
+    current_user: models.User = Depends(get_lecturer),
+    db: Session = Depends(get_db),
+):
+    """Attendance statuses for a single date, as {student_id, status} rows."""
+    _require_owned_course(course_id, current_user, db)
+    records = db.query(models.Attendance).filter(
+        models.Attendance.course_id == course_id,
+        models.Attendance.date == date,
+    ).all()
+    return [{"student_id": a.student_id, "status": a.status} for a in records]
+
+
+@router.post("/courses/{course_id}/attendance/bulk")
+def attendance_bulk(
+    course_id: int,
+    records: List[schemas.AttendanceCreate],
+    current_user: models.User = Depends(get_lecturer),
+    db: Session = Depends(get_db),
+):
+    """Upsert many attendance rows at once (one date, many students)."""
+    _require_owned_course(course_id, current_user, db)
+    enrolled_ids = {
+        e.student_id for e in db.query(models.Enrollment).filter(
+            models.Enrollment.course_id == course_id
+        ).all()
+    }
+    valid = {"present", "absent", "late"}
+    saved = 0
+    for rec in records:
+        if rec.student_id not in enrolled_ids or rec.status not in valid:
+            continue
+        existing = db.query(models.Attendance).filter(
+            models.Attendance.student_id == rec.student_id,
+            models.Attendance.course_id == course_id,
+            models.Attendance.date == rec.date,
+        ).first()
+        if existing:
+            existing.status = rec.status
+        else:
+            db.add(models.Attendance(
+                student_id=rec.student_id, course_id=course_id,
+                date=rec.date, status=rec.status,
+            ))
+        saved += 1
+    db.commit()
+    return {"message": "Attendance saved", "count": saved}
+
+
+# ============ Grade summary (per student) ============
+
+@router.put("/courses/{course_id}/students/{student_id}/grades-summary")
+def update_grade_summary(
+    course_id: int,
+    student_id: int,
+    payload: schemas.GradeSummaryUpdate,
+    current_user: models.User = Depends(get_lecturer),
+    db: Session = Depends(get_db),
+):
+    """Upsert the three headline grades and return the recomputed summary row."""
+    _require_owned_course(course_id, current_user, db)
+    student = db.query(models.User).filter(models.User.id == student_id).first()
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    enrolled = db.query(models.Enrollment).filter(
+        models.Enrollment.student_id == student_id,
+        models.Enrollment.course_id == course_id,
+    ).first()
+    if not enrolled:
+        raise HTTPException(status_code=404, detail="Student not enrolled in this course")
+
+    def _upsert(assessment_type: str, score, max_score: float):
+        row = db.query(models.Grade).filter(
+            models.Grade.student_id == student_id,
+            models.Grade.course_id == course_id,
+            models.Grade.assessment_type == assessment_type,
+        ).first()
+        if score is None:
+            if row:
+                db.delete(row)
+            return
+        if row:
+            row.score = score
+            row.max_score = max_score
+        else:
+            db.add(models.Grade(
+                student_id=student_id, course_id=course_id,
+                assessment_type=assessment_type, score=score,
+                max_score=max_score, weight=1.0,
+            ))
+
+    _upsert(_MID_TYPE, payload.mid_grade, 30.0)
+    _upsert(_PARTICIPATION_TYPE, payload.participation_grade, 30.0)
+    _upsert(_FINAL_TYPE, payload.final_exam_grade, 40.0)
+
+    # Keep the enrollment's cached final grade in sync when provided.
+    if payload.final_exam_grade is not None:
+        enrolled.final_grade = payload.final_exam_grade
+
+    db.commit()
+    db.refresh(student)
+    return _grade_summary_row(db, course_id, student)
 
 
 # ============ Legacy Endpoints (me/courses/{id}/...) ============
@@ -472,27 +673,115 @@ def upload_material(
     return {"message": "Material uploaded", "id": new_material.id}
 
 
+def _material_files(m: models.CourseMaterial) -> list:
+    """Return the material's files as a list, synthesizing one entry from the
+    legacy single file_url when files_json is absent."""
+    import json
+    if m.files_json:
+        try:
+            data = json.loads(m.files_json)
+            if isinstance(data, list):
+                return data
+        except (ValueError, TypeError):
+            pass
+    if m.file_url:
+        from pathlib import Path as _P
+        return [{"id": m.id, "file_name": _P(m.file_url).name, "file_url": m.file_url,
+                 "file_size_bytes": None, "content_type": None}]
+    return []
+
+
+def _material_out(m: models.CourseMaterial) -> dict:
+    return {
+        "id": m.id,
+        "title": m.title,
+        "description": m.description,
+        "uploaded_at": m.created_at.isoformat() if m.created_at else None,
+        "files": _material_files(m),
+    }
+
+
 @router.get("/courses/{course_id}/materials")
 def get_course_materials(
     course_id: int,
     current_user: models.User = Depends(get_lecturer),
     db: Session = Depends(get_db)
 ):
-    """مواد المقرر"""
+    """مواد المقرر (with files[])"""
+    _require_owned_course(course_id, current_user, db)
     materials = db.query(models.CourseMaterial).filter(
         models.CourseMaterial.course_id == course_id
-    ).all()
-    
-    return [
-        {
-            "id": m.id,
-            "title": m.title,
-            "description": m.description,
-            "file_url": m.file_url,
-            "created_at": m.created_at.isoformat() if m.created_at else None
-        }
-        for m in materials
-    ]
+    ).order_by(models.CourseMaterial.id).all()
+    return [_material_out(m) for m in materials]
+
+
+@router.post("/courses/{course_id}/materials", status_code=201)
+def create_course_material(
+    course_id: int,
+    data: schemas.MaterialCreateMulti,
+    current_user: models.User = Depends(get_lecturer),
+    db: Session = Depends(get_db)
+):
+    """Create a course material with one or more files."""
+    import json
+    _require_owned_course(course_id, current_user, db)
+    files = [f.model_dump() for f in data.files]
+    m = models.CourseMaterial(
+        course_id=course_id, title=data.title, description=data.description or "",
+        file_url=files[0]["file_url"] if files else None,
+        files_json=json.dumps(files) if files else None,
+        uploaded_by=current_user.id,
+    )
+    db.add(m)
+    db.commit()
+    db.refresh(m)
+    return _material_out(m)
+
+
+@router.put("/courses/{course_id}/materials/{material_id}")
+def update_course_material(
+    course_id: int,
+    material_id: int,
+    data: schemas.MaterialCreateMulti,
+    current_user: models.User = Depends(get_lecturer),
+    db: Session = Depends(get_db)
+):
+    """Update a course material's title/description/files."""
+    import json
+    _require_owned_course(course_id, current_user, db)
+    m = db.query(models.CourseMaterial).filter(
+        models.CourseMaterial.id == material_id,
+        models.CourseMaterial.course_id == course_id,
+    ).first()
+    if not m:
+        raise HTTPException(status_code=404, detail="Material not found")
+    files = [f.model_dump() for f in data.files]
+    m.title = data.title
+    m.description = data.description or ""
+    m.file_url = files[0]["file_url"] if files else None
+    m.files_json = json.dumps(files) if files else None
+    db.commit()
+    return _material_out(m)
+
+
+@router.delete("/courses/{course_id}/materials/{material_id}")
+def delete_course_material(
+    course_id: int,
+    material_id: int,
+    current_user: models.User = Depends(get_lecturer),
+    db: Session = Depends(get_db)
+):
+    """Delete a course material (course content, not student history)."""
+    _require_owned_course(course_id, current_user, db)
+    m = db.query(models.CourseMaterial).filter(
+        models.CourseMaterial.id == material_id,
+        models.CourseMaterial.course_id == course_id,
+    ).first()
+    if not m:
+        raise HTTPException(status_code=404, detail="Material not found")
+    db.delete(m)
+    db.commit()
+    return {"message": "Material deleted"}
 
 
 # ============ Unified Student Data Entry with AI Predictions ============
@@ -720,7 +1009,6 @@ async def upload_course_pdf(
         raise HTTPException(status_code=400, detail="Only PDF, TXT, and MD files are allowed")
     
     try:
-        import os
         from pathlib import Path
         
         # إنشاء مجلد التحميلات

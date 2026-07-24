@@ -13,6 +13,16 @@ import schemas
 
 router = APIRouter(prefix="/predictions", tags=["AI Predictions"])
 
+# Canonical OULAD feature order — MUST match the trained scaler/model's
+# feature_names_in_ exactly (verified by tests/test_ml_golden.py).
+OULAD_FEATURE_ORDER = [
+    "Weighted_grade", "Pass_rate", "Score_tma", "Score_cma",
+    "Sum_click", "Days_Active", "num_of_prev_attempts",
+]
+# AXI class index -> label. Matches the training notebook's
+# class_mapping = {'L': 0, 'M': 1, 'H': 2}.
+AXI_IDX_TO_CLASS = {0: "L", 1: "M", 2: "H"}
+
 # تحميل الموديلات عند بدء التطبيق (يتم تحميلها في main.py)
 oulad_model = None
 oulad_scaler = None
@@ -35,7 +45,7 @@ def load_models():
             
             # Load Scaler
             oulad_scaler = joblib.load(OULAD_SCALER_PATH)
-            print(f"OULAD model and scaler loaded")
+            print("OULAD model and scaler loaded")
     except Exception as e:
         print(f"Error loading OULAD model: {e}")
     
@@ -43,7 +53,7 @@ def load_models():
         if AXI_MODEL_PATH.exists() and AXI_SCALER_PATH.exists():
             axi_model = joblib.load(AXI_MODEL_PATH)
             axi_scaler = joblib.load(AXI_SCALER_PATH)
-            print(f"AXI model and scaler loaded")
+            print("AXI model and scaler loaded")
     except Exception as e:
         print(f"Error loading AXI model: {e}")
 
@@ -74,12 +84,7 @@ def predict_oulad(
         })
     
     df = pd.DataFrame(input_data)
-    # Correct Feature Order from Training: ['Weighted_grade', 'Pass_rate', 'Score_tma', 'Score_cma', 'Sum_click', 'Days_Active', 'num_of_prev_attempts']
-    # Wait, let's double check the user message vs code.
-    # User said: "Weighted_grade, Sum_click, Days_Active" etc.
-    # Training notebook line 114: feature_cols = ['Weighted_grade', 'Pass_rate', 'Score_tma', 'Score_cma', 'Sum_click', 'Days_Active', 'num_of_prev_attempts']
-    
-    feature_order = ['Weighted_grade', 'Pass_rate', 'Score_tma', 'Score_cma', 'Sum_click', 'Days_Active', 'num_of_prev_attempts']
+    feature_order = OULAD_FEATURE_ORDER
     
     # Scale Data
     try:
@@ -154,7 +159,7 @@ def predict_oulad_raw(
             'Days_Active': data.active_days
         }])
         
-        feature_order = ['Weighted_grade', 'Pass_rate', 'Score_tma', 'Score_cma', 'Sum_click', 'Days_Active', 'num_of_prev_attempts']
+        feature_order = OULAD_FEATURE_ORDER
         
         # Scale
         input_data = input_data[feature_order]
@@ -213,7 +218,7 @@ def predict_axi(
         prediction_probas = axi_model.predict_proba(features_scaled)
         predicted_class_idx = np.argmax(prediction_probas, axis=1)[0]
         
-        idx_to_class = {0: 'L', 1: 'M', 2: 'H'}
+        idx_to_class = AXI_IDX_TO_CLASS
         predicted_label = idx_to_class.get(predicted_class_idx, "Unknown")
         
         return {
@@ -264,13 +269,18 @@ def predict_for_student(
         features = models.StudentFeature(student_id=student_id, course_id=course_id)
         db.add(features)
     
-    # 3. Dynamic Calculation of Features (The Fix)
-    
-    # A. Calculate Days_Active & Sum_Click from StudentVle
-    # This addresses "Fix Days_Active calculation ... use studentVle"
+    # 3. Dynamic Calculation of Features
+
+    # A. Calculate Days_Active & Sum_Click from StudentVle.
+    # TRAINING PARITY: the OULAD notebook defines
+    #     Days_Active = ('date', 'max')     -- the LAST active study-day index
+    # NOT the count of distinct active days. Using COUNT(DISTINCT date) here
+    # produced a large training/serving skew (training mean 177.3 vs runtime
+    # mean 61.9 on the OULAD data) on the model's highest-importance feature.
+    # See docs/ml-evaluation.md.
     from sqlalchemy import func
     vle_stats = db.query(
-        func.count(func.distinct(models.StudentVle.date)).label('days_active'),
+        func.max(models.StudentVle.date).label('days_active'),
         func.sum(models.StudentVle.sum_click).label('total_clicks')
     ).filter(
         models.StudentVle.student_id == student_id,
@@ -282,35 +292,42 @@ def predict_for_student(
         features.date = vle_stats.days_active  # Mapping Days_Active -> date column
         features.sum_click = vle_stats.total_clicks if vle_stats.total_clicks else 0
     
-    # B. Calculate Weighted_grade from Grades (prevent leakage)
-    # Exclude 'Exam' type
+    # B. Calculate Weighted_grade from Grades (prevent target leakage)
+    # The trained model expects weighted_grade on a 0-100 scale (see seed_data).
+    # We therefore compute a *normalized weighted average*, not a raw sum, and we
+    # exclude the final exam so it never leaks into an "early risk" prediction.
+    EXCLUDED_FROM_FEATURES = {"final", "exam", "final exam"}  # case-insensitive
+
     grades = db.query(models.Grade).filter(
         models.Grade.student_id == student_id,
         models.Grade.course_id == course_id,
-        models.Grade.assessment_type != 'Exam'  # CRITICAL: Prevent Leakage
     ).all()
-    
-    total_weighted_score = 0
-    total_weight = 0
-    
-    for g in grades:
-        total_weighted_score += (g.score * g.weight)
-        total_weight += g.weight
-        
+
+    graded = [
+        g for g in grades
+        if (g.assessment_type or "").strip().lower() not in EXCLUDED_FROM_FEATURES
+    ]
+
+    total_weighted_score = 0.0
+    total_weight = 0.0
+    for g in graded:
+        max_score = g.max_score or 100.0
+        normalized = (g.score / max_score) * 100.0 if max_score else 0.0
+        weight = g.weight or 1.0
+        total_weighted_score += normalized * weight
+        total_weight += weight
+
     if total_weight > 0:
-        # Scale to 0-100 if weights are e.g. 100 total
-        # Assuming weights sum up to 100 for the full course (including exam).
-        # We want the weighted average SO FAR or scaled to 100?
-        # OULAD 'weighted_grade' is usually the sum of (score*weight).
-        # If weights are percentages (e.g. 10, 20), then sum is say 50/100.
-        features.weighted_grade = total_weighted_score
-    
-    # C. Update Score_TMA / Score_CMA averages if possible (optional but good)
-    tma_grades = [g.score for g in grades if g.assessment_type == 'TMA']
+        # 0-100 normalized weighted average, matching the training scale.
+        features.weighted_grade = total_weighted_score / total_weight
+
+    # C. Update Score_TMA / Score_CMA averages only when matching grades exist,
+    # so we never overwrite a stored value with a spurious 0.
+    tma_grades = [g.score for g in graded if g.assessment_type == 'TMA']
     if tma_grades:
         features.score_tma = sum(tma_grades) / len(tma_grades)
-        
-    cma_grades = [g.score for g in grades if g.assessment_type == 'CMA']
+
+    cma_grades = [g.score for g in graded if g.assessment_type == 'CMA']
     if cma_grades:
         features.score_cma = sum(cma_grades) / len(cma_grades)
 
@@ -325,7 +342,7 @@ def predict_for_student(
         'Days_Active': features.date 
     }])
     
-    feature_order = ['Weighted_grade', 'Pass_rate', 'Score_tma', 'Score_cma', 'Sum_click', 'Days_Active', 'num_of_prev_attempts']
+    feature_order = OULAD_FEATURE_ORDER
     
     # Scale
     input_data = input_data[feature_order]
@@ -346,9 +363,4 @@ def predict_for_student(
         "prediction": int(prediction),
         "prediction_label": "Success" if prediction == 1 else "Failure",
         "probability": prob_success,
-        "debug_values": {
-            "days_active": features.date,
-            "weighted_grade": features.weighted_grade,
-            "clicks": features.sum_click
-        }
     }

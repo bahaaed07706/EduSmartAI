@@ -214,7 +214,7 @@ const LecturerCourseMaterials = () => {
             </div>
           ) : materials.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-2 py-10 text-center text-slate-500">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
                 <FolderOpen className="h-6 w-6" />
               </div>
               <span className="text-base font-medium">
@@ -304,21 +304,21 @@ const LecturerCourseMaterials = () => {
                               <span className="truncate max-w-[9rem]">
                                 {file.file_name}
                               </span>
-                              <span className="text-[9px] text-slate-400">
+                              <span className="text-[9px] text-slate-500">
                                 Download
                               </span>
                             </a>
                           ))}
                         </div>
                       ) : (
-                        <p className="text-xs text-slate-400">
+                        <p className="text-xs text-slate-500">
                           No files attached yet.
                         </p>
                       )}
                     </div>
 
                     {/* Footer */}
-                    <footer className="mt-4 flex items-center justify-between text-[11px] text-slate-400">
+                    <footer className="mt-4 flex items-center justify-between text-[11px] text-slate-500">
                       <div className="flex items-center gap-1.5">
                         <Clock className="h-3 w-3" />
                         <span>
@@ -365,7 +365,7 @@ const LecturerCourseMaterials = () => {
                 <button
                   type="button"
                   onClick={closeForm}
-                  className="rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                  className="rounded-full p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-600"
                 >
                   ✕
                 </button>

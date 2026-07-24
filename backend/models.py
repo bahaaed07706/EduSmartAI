@@ -21,13 +21,24 @@ class User(Base):
     phone = Column(String(20), nullable=True)
     city = Column(String(50), nullable=True)  # مدينة السكن
     university = Column(String(100), nullable=True)
-    department = Column(String(100), nullable=True)  # القسم
+    department = Column(String(100), nullable=True)  # القسم (نص قديم - محفوظ للمرجع)
     specialization = Column(String(100), nullable=True)  # التخصص
     academic_year = Column(String(20), nullable=True)  # السنة الدراسية (للطلاب)
-    
+
+    # Normalized academic identity (added additively; old string fields kept)
+    student_number = Column(String(30), unique=True, nullable=True)   # e.g. STU0005
+    lecturer_number = Column(String(30), unique=True, nullable=True)  # e.g. LEC0002
+    department_id = Column(Integer, ForeignKey("departments.id"), nullable=True)
+    gpa = Column(Float, nullable=True)
+    region = Column(String(80), nullable=True)          # student region/city of record
+    highest_education = Column(String(80), nullable=True)
+    # Soft-delete flag. Deactivated users keep ALL historical records but cannot
+    # log in and are hidden from admin lists. Never hard-delete a user.
+    is_active = Column(Integer, default=1, nullable=False)
+
     # NOTE: AXI behavioral fields moved to StudentFeature (per-course tracking)
     # Old fields removed to avoid duplication
-    
+
     created_at = Column(DateTime, server_default=func.now())
     
     # العلاقات
@@ -43,12 +54,20 @@ class Course(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(200), nullable=False)
-    code = Column(String(20), unique=True, nullable=False)
+    code = Column(String(20), unique=True, nullable=False)  # exposed to API as course_code
     description = Column(Text, nullable=True)
     credit_hours = Column(Integer, default=3)
-    department = Column(String(100), nullable=True)
+    department = Column(String(100), nullable=True)  # legacy string, kept for reference
     lecturer_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    
+
+    # Normalized links (added additively)
+    department_id = Column(Integer, ForeignKey("departments.id"), nullable=True)
+    semester_id = Column(Integer, ForeignKey("semesters.id"), nullable=True)
+    days_and_times = Column(Text, nullable=True)  # JSON string e.g. {"mon":"10:00-12:00"}
+    # Soft-delete flag. Archived courses keep all enrollments/grades/attendance
+    # but are hidden from admin lists. Never hard-delete a course with history.
+    is_archived = Column(Integer, default=0, nullable=False)
+
     # العلاقات
     lecturer = relationship("User", back_populates="courses_teaching")
     enrollments = relationship("Enrollment", back_populates="course")
@@ -66,7 +85,11 @@ class Enrollment(Base):
     course_id = Column(Integer, ForeignKey("courses.id"), nullable=False)
     semester = Column(String(20), default="2024-1")
     status = Column(String(20), default="active")  # active, completed, withdrawn
-    
+
+    # Added additively
+    semester_id = Column(Integer, ForeignKey("semesters.id"), nullable=True)
+    final_grade = Column(Float, nullable=True)
+
     # منع التكرار: طالب + مقرر فريد
     __table_args__ = (
         UniqueConstraint('student_id', 'course_id', name='uq_student_course'),
@@ -128,7 +151,8 @@ class CourseMaterial(Base):
     course_id = Column(Integer, ForeignKey("courses.id"), nullable=False)
     title = Column(String(200), nullable=False)
     description = Column(Text, nullable=True)
-    file_url = Column(String(500), nullable=True)
+    file_url = Column(String(500), nullable=True)   # legacy single-file link
+    files_json = Column(Text, nullable=True)         # JSON array of {file_name, file_url, ...}
     content_text = Column(Text, nullable=True)  # محتوى نصي للـ Chatbot
     uploaded_by = Column(Integer, ForeignKey("users.id"), nullable=False)
     created_at = Column(DateTime, server_default=func.now())
@@ -181,14 +205,184 @@ class StudentFeature(Base):
 class StudentVle(Base):
     """جدول تفاعل الطالب مع المواد (VLE) - لحساب Days_Active و Sum_Click"""
     __tablename__ = "student_vle"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     student_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     course_id = Column(Integer, ForeignKey("courses.id"), nullable=False)
     date = Column(Integer, nullable=False)  # اليوم الدراسي (مثلاً -10, 0, 10...)
     sum_click = Column(Integer, default=0)
-    
+
     # Relationships
     student = relationship("User")
     course = relationship("Course")
+
+
+class Department(Base):
+    """Academic department (normalized). department_id is the human code (CS, IT...)."""
+    __tablename__ = "departments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    department_id = Column(String(20), unique=True, nullable=False)  # human code
+    name = Column(String(120), nullable=False)
+    created_at = Column(DateTime, server_default=func.now())
+
+
+class Semester(Base):
+    """Academic semester/term."""
+    __tablename__ = "semesters"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(60), nullable=False)        # e.g. Fall, Spring
+    year = Column(Integer, nullable=False)
+    start_date = Column(Date, nullable=True)
+    end_date = Column(Date, nullable=True)
+    is_current = Column(Integer, default=0)          # 0/1 flag
+    created_at = Column(DateTime, server_default=func.now())
+
+
+class Notification(Base):
+    """Per-user notification."""
+    __tablename__ = "notifications"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    title = Column(String(160), nullable=True)
+    message = Column(Text, nullable=True)
+    course_id = Column(Integer, ForeignKey("courses.id"), nullable=True)
+    is_read = Column(Integer, default=0)             # 0/1 flag
+    created_at = Column(DateTime, server_default=func.now())
+
+
+# ============ Quiz engine (interactive MCQ, auto-graded) ============
+
+class Quiz(Base):
+    __tablename__ = "quizzes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    course_id = Column(Integer, ForeignKey("courses.id"), nullable=False, index=True)
+    title = Column(String(200), nullable=False)
+    description = Column(Text, nullable=True)
+    start_date = Column(DateTime, nullable=True)
+    end_date = Column(DateTime, nullable=True)
+    duration_minutes = Column(Integer, nullable=True)   # null/0 => no time limit
+    max_marks = Column(Float, default=0.0)
+    weight_from_participation = Column(Float, default=0.0)
+    file_url = Column(String(500), nullable=True)
+    created_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime, server_default=func.now())
+    # Marks records created by automated E2E runs. Kept (never hard-deleted) but
+    # excluded from student-facing lists so demo data is not mistaken for real.
+    is_test_data = Column(Integer, default=0, nullable=False)
+
+    questions = relationship(
+        "QuizQuestion", back_populates="quiz",
+        cascade="all, delete-orphan", order_by="QuizQuestion.position",
+    )
+
+
+class QuizQuestion(Base):
+    __tablename__ = "quiz_questions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    quiz_id = Column(Integer, ForeignKey("quizzes.id"), nullable=False, index=True)
+    question_text = Column(Text, nullable=False)   # sanitized HTML
+    marks = Column(Float, default=1.0)
+    position = Column(Integer, default=0)
+
+    quiz = relationship("Quiz", back_populates="questions")
+    options = relationship(
+        "QuizOption", back_populates="question",
+        cascade="all, delete-orphan", order_by="QuizOption.position",
+    )
+
+
+class QuizOption(Base):
+    __tablename__ = "quiz_options"
+
+    id = Column(Integer, primary_key=True, index=True)
+    question_id = Column(Integer, ForeignKey("quiz_questions.id"), nullable=False, index=True)
+    option_text = Column(String(500), nullable=False)
+    is_correct = Column(Integer, default=0)   # 0/1 — NEVER exposed to students pre-submit
+    position = Column(Integer, default=0)
+
+    question = relationship("QuizQuestion", back_populates="options")
+
+
+class QuizAttempt(Base):
+    __tablename__ = "quiz_attempts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    quiz_id = Column(Integer, ForeignKey("quizzes.id"), nullable=False, index=True)
+    student_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    started_at = Column(DateTime, server_default=func.now())
+    end_time = Column(DateTime, nullable=True)     # server-authoritative deadline
+    submitted_at = Column(DateTime, nullable=True)
+    status = Column(String(20), default="in_progress")  # in_progress | submitted
+    score = Column(Float, nullable=True)
+
+    __table_args__ = (
+        UniqueConstraint("quiz_id", "student_id", name="uq_quiz_student_attempt"),
+    )
+
+    answers = relationship(
+        "QuizAnswer", back_populates="attempt", cascade="all, delete-orphan",
+    )
+
+
+class QuizAnswer(Base):
+    __tablename__ = "quiz_answers"
+
+    id = Column(Integer, primary_key=True, index=True)
+    attempt_id = Column(Integer, ForeignKey("quiz_attempts.id"), nullable=False, index=True)
+    question_id = Column(Integer, ForeignKey("quiz_questions.id"), nullable=False)
+    selected_option_id = Column(Integer, ForeignKey("quiz_options.id"), nullable=True)
+    saved_at = Column(DateTime, server_default=func.now())
+
+    __table_args__ = (
+        UniqueConstraint("attempt_id", "question_id", name="uq_attempt_question"),
+    )
+
+    attempt = relationship("QuizAttempt", back_populates="answers")
+
+
+# ============ Assessment engine (file submission, manual grade) ============
+
+class Assessment(Base):
+    __tablename__ = "assessments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    course_id = Column(Integer, ForeignKey("courses.id"), nullable=False, index=True)
+    type = Column(String(20), default="assignment")   # assignment | project | quiz
+    title = Column(String(200), nullable=False)
+    description = Column(Text, nullable=True)
+    start_date = Column(DateTime, nullable=True)
+    end_date = Column(DateTime, nullable=True)
+    max_marks = Column(Float, default=100.0)
+    weight_from_participation = Column(Float, default=0.0)
+    file_url = Column(String(500), nullable=True)   # lecturer's attached brief
+    created_at = Column(DateTime, server_default=func.now())
+
+    submissions = relationship(
+        "Submission", back_populates="assessment", cascade="all, delete-orphan",
+    )
+
+
+class Submission(Base):
+    __tablename__ = "submissions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    assessment_id = Column(Integer, ForeignKey("assessments.id"), nullable=False, index=True)
+    student_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    file_url = Column(String(500), nullable=True)
+    submitted_at = Column(DateTime, server_default=func.now())
+    marks_obtained = Column(Float, nullable=True)
+    feedback = Column(Text, nullable=True)
+    graded_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    graded_at = Column(DateTime, nullable=True)
+
+    __table_args__ = (
+        UniqueConstraint("assessment_id", "student_id", name="uq_assessment_student"),
+    )
+
+    assessment = relationship("Assessment", back_populates="submissions")
 

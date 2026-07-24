@@ -160,13 +160,13 @@ const AdminStudents = () => {
             <Users className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary/80">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary-700">
               Admin · Students
             </p>
             <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
               Students Management
             </h1>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-600">
               View, search, add, edit, and delete student records.
             </p>
 
@@ -224,7 +224,7 @@ const AdminStudents = () => {
           </label>
           <div className="relative">
             <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
-              <Search className="h-3.5 w-3.5 text-slate-400" />
+              <Search className="h-3.5 w-3.5 text-slate-500" />
             </span>
             <input
               type="text"
@@ -241,7 +241,11 @@ const AdminStudents = () => {
             <Filter className="h-3 w-3" />
             Department
           </label>
+          {/* axe select-name: the visible <label> was not associated with this
+              control, so it had no accessible name. */}
           <select
+            id="student-department-filter"
+            aria-label="Filter students by department"
             className="w-full rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-1.5 text-sm focus:border-primary focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary/40"
             value={departmentFilter}
             onChange={(e) => setDepartmentFilter(e.target.value)}
@@ -303,7 +307,7 @@ const AdminStudents = () => {
                           {Number(s.gpa).toFixed(2)}
                         </span>
                       ) : (
-                        <span className="text-slate-400">--</span>
+                        <span className="text-slate-500">--</span>
                       )}
                     </td>
                     <td className="whitespace-nowrap px-3 py-2 text-slate-700">

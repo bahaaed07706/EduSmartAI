@@ -61,7 +61,7 @@ const NotificationDropdown = ({
             <button
               type="button"
               onClick={onClose}
-              className="flex h-6 w-6 items-center justify-center rounded-full text-xs text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+              className="flex h-6 w-6 items-center justify-center rounded-full text-xs text-slate-500 hover:bg-slate-100 hover:text-slate-700"
               aria-label="Close notifications"
             >
               ✕
@@ -114,7 +114,7 @@ const NotificationDropdown = ({
               <p className="text-sm font-medium text-slate-800">
                 No notifications yet
               </p>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-slate-600">
                 When something important happens in your courses, it will show
                 up here.
               </p>
@@ -169,7 +169,7 @@ const NotificationDropdown = ({
                           <span>Course #{n.course_id}</span>
                         </span>
                       )}
-                      <span className="ml-auto text-[11px] text-slate-400">
+                      <span className="ml-auto text-[11px] text-slate-500">
                         {formatTime(n.created_at)}
                       </span>
                     </div>

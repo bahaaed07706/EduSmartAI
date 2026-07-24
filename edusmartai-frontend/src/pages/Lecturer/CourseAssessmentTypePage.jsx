@@ -418,7 +418,7 @@ const CourseAssessmentTypePage = ({
             <ClipboardList className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary/80">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary-700">
               Course #{courseId}
             </p>
             <h2 className="mt-1 flex flex-wrap items-center gap-2 text-2xl font-bold tracking-tight text-slate-900">
@@ -428,7 +428,7 @@ const CourseAssessmentTypePage = ({
                 <span>{stats.total} total</span>
               </span>
             </h2>
-            <p className="mt-1 text-xs text-slate-500">{pageDescription}</p>
+            <p className="mt-1 text-xs text-slate-600">{pageDescription}</p>
 
             <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-slate-500">
               {stats.avgMaxMarks && (
@@ -536,7 +536,7 @@ const CourseAssessmentTypePage = ({
               <p className="text-sm font-medium text-slate-800">
                 No {pluralLabel.toLowerCase()} yet
               </p>
-              <p className="mt-1 text-xs text-slate-500">{emptyStateText}</p>
+              <p className="mt-1 text-xs text-slate-600">{emptyStateText}</p>
             </div>
             <Button size="sm" onClick={() => setCreateOpen(true)}>
               <PlusCircle className="mr-1 h-4 w-4" />
@@ -612,7 +612,7 @@ const CourseAssessmentTypePage = ({
                             </div>
                           </div>
                         ) : (
-                          <span className="text-slate-400">—</span>
+                          <span className="text-slate-500">—</span>
                         )}
                       </td>
                       <td className="py-2 px-3 text-right whitespace-nowrap space-x-1">
@@ -661,7 +661,7 @@ const CourseAssessmentTypePage = ({
                 <ClipboardList className="h-4 w-4 text-emerald-600" />
                 Submissions – {selectedAssessmentSubmissions.assessment.title}
               </h3>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-slate-600">
                 Click <span className="font-medium">Grade / update</span> to
                 enter or modify marks and feedback.
               </p>
@@ -725,7 +725,7 @@ const CourseAssessmentTypePage = ({
                             </div>
                           </div>
                         ) : (
-                          <span className="text-slate-400">No file</span>
+                          <span className="text-slate-500">No file</span>
                         )}
                       </td>
                       <td className="py-2 px-3">{sub.submitted_at || "-"}</td>
@@ -756,7 +756,7 @@ const CourseAssessmentTypePage = ({
                   <tr>
                     <td
                       colSpan={6}
-                      className="py-4 px-3 text-center text-sm text-slate-400"
+                      className="py-4 px-3 text-center text-sm text-slate-500"
                     >
                       No submissions yet.
                     </td>

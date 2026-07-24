@@ -5,6 +5,27 @@ import useAuth from "../../hooks/useAuth";
 import Input from "../../components/UI/Input";
 import Button from "../../components/UI/Button";
 
+/**
+ * Demo credentials shown on the login screen, sourced from build-time env vars.
+ *
+ * Previously these were hardcoded, which meant any public deployment published
+ * a working admin password to every visitor. Now nothing is rendered unless the
+ * deployment explicitly opts in, and the admin account is never listed — an
+ * evaluator does not need destructive access to assess the project.
+ */
+const DEMO_ACCOUNTS = [
+  {
+    label: "Student",
+    email: process.env.REACT_APP_DEMO_STUDENT_EMAIL,
+    password: process.env.REACT_APP_DEMO_STUDENT_PASSWORD,
+  },
+  {
+    label: "Lecturer",
+    email: process.env.REACT_APP_DEMO_LECTURER_EMAIL,
+    password: process.env.REACT_APP_DEMO_LECTURER_PASSWORD,
+  },
+].filter((a) => a.email && a.password);
+
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -111,21 +132,30 @@ const LoginPage = () => {
             {loading ? "Logging in..." : "Login"}
           </Button>
 
-          <p className="text-[10px] text-slate-400 text-center mt-2">
+          <p className="text-[10px] text-slate-500 text-center mt-2">
             Use your university email and password. Contact support if you forget
             your credentials.
           </p>
         </form>
 
-        {/* Demo accounts info */}
-        <div className="mt-6 p-3 bg-slate-50 rounded-lg border border-slate-100">
-          <p className="text-xs font-medium text-slate-600 mb-2">Demo Accounts:</p>
-          <div className="text-[10px] text-slate-500 space-y-1">
-            <p><strong>Student:</strong> ahmed@edu.com / student123</p>
-            <p><strong>Lecturer:</strong> dr.salem@edu.com / lecturer123</p>
-            <p><strong>Admin:</strong> admin@edu.com / admin123</p>
+        {/* Demo credentials are injected at build time and are only ever
+            rendered for a synthetic-data instance. They are never bundled for
+            a build that points at real records, and the admin account is
+            deliberately not advertised. */}
+        {DEMO_ACCOUNTS.length > 0 && (
+          <div className="mt-6 p-3 bg-slate-50 rounded-lg border border-slate-100">
+            <p className="text-xs font-medium text-slate-600 mb-2">
+              Demo accounts (synthetic data):
+            </p>
+            <div className="text-[10px] text-slate-500 space-y-1">
+              {DEMO_ACCOUNTS.map(({ label, email, password }) => (
+                <p key={label}>
+                  <strong>{label}:</strong> {email} / {password}
+                </p>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

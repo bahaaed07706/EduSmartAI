@@ -14,7 +14,34 @@ from database import SessionLocal, init_db
 from auth import hash_password
 import models
 from datetime import date, timedelta
+import os
 import random
+
+
+class SeedConfigError(RuntimeError):
+    """Raised when seed credentials are not supplied via the environment."""
+
+
+def _seed_password(role: str) -> str:
+    """Read a seed password from the environment.
+
+    Passwords used to be hardcoded literals here, which meant every clone of
+    this repository shipped working credentials for a public deployment. They
+    now come from the environment and have no default: seeding fails loudly
+    rather than silently creating a guessable admin account.
+
+    The value is never logged.
+    """
+    var = f"SEED_{role.upper()}_PASSWORD"
+    value = os.getenv(var, "").strip()
+    if len(value) < 12:
+        raise SeedConfigError(
+            f"{var} must be set to at least 12 characters before seeding. "
+            "See backend/.env.example. Generate one with: "
+            'python -c "import secrets; print(secrets.token_urlsafe(18))"'
+        )
+    return value
+
 
 def seed_all():
     """Seed complete realistic data"""
@@ -31,7 +58,7 @@ def seed_all():
             admin = models.User(
                 name="عبدالله الخالدي",
                 email="admin@edu.com",
-                password_hash=hash_password("admin123"),
+                password_hash=hash_password(_seed_password("admin")),
                 role="admin",
                 age=45,
                 gender="male",
@@ -87,7 +114,7 @@ def seed_all():
                 lecturer = models.User(
                     name=ldata["name"],
                     email=ldata["email"],
-                    password_hash=hash_password("lecturer123"),
+                    password_hash=hash_password(_seed_password("lecturer")),
                     role="lecturer",
                     age=ldata["age"],
                     gender=ldata["gender"],
@@ -176,7 +203,7 @@ def seed_all():
                 student = models.User(
                     name=sdata["name"],
                     email=sdata["email"],
-                    password_hash=hash_password("student123"),
+                    password_hash=hash_password(_seed_password("student")),
                     role="student",
                     age=sdata["age"],
                     gender=sdata["gender"],
@@ -413,7 +440,7 @@ def seed_all():
                         course_id=course.id,
                         title=f"مراجعة منتصف الفصل - {course.name}",
                         description="مراجعة شاملة للامتحان النصفي",
-                        content_text=f"مراجعة لجميع المواضيع حتى منتصف الفصل.",
+                        content_text="مراجعة لجميع المواضيع حتى منتصف الفصل.",
                         uploaded_by=course.lecturer_id or 1
                     )
                 ]
@@ -434,7 +461,7 @@ def seed_all():
         print("\n" + "="*50)
         print("🎉 COMPLETE DATA SEEDED SUCCESSFULLY!")
         print("="*50)
-        print(f"👤 Admin: 1")
+        print("👤 Admin: 1")
         print(f"👨‍🏫 Lecturers: {total_lecturers}")
         print(f"👨‍🎓 Students: {total_students}")
         print(f"📚 Courses: {total_courses}")

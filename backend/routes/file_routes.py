@@ -6,21 +6,95 @@ Real File Upload System:
 3. Content stored for RAG chatbot
 """
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from typing import Optional
-import os
 import shutil
 from datetime import datetime
 from pathlib import Path
+from config import UPLOAD_DIR  # env-driven; a deployment points this at a persistent disk
 from database import get_db
 from auth import get_lecturer, get_current_user
 import models
 
 router = APIRouter(prefix="/files", tags=["Files"])
 
-# Upload directory
-UPLOAD_DIR = Path(__file__).parent.parent / "uploads"
-UPLOAD_DIR.mkdir(exist_ok=True)
+
+def _resolve_within_uploads(stored_path: str) -> Optional[Path]:
+    """Resolve a stored file reference and confirm it stays inside UPLOAD_DIR.
+
+    Stored references come in three historical shapes, and all must resolve
+    identically on Windows and POSIX:
+
+    * ``/uploads/submissions/user_5/ab.pdf`` — the URL-style value returned by
+      ``POST /files/upload``. The leading slash makes ``Path.is_absolute()``
+      True on POSIX but False on Windows, so it must be stripped *before* any
+      absolute/relative decision. Without this the download 404s on Linux while
+      passing on a Windows dev machine.
+    * ``submissions/user_5/ab.pdf`` — a plain relative path.
+    * ``C:\\...\\uploads\\course_1\\x.pdf`` — a real absolute filesystem path
+      written by older ``upload_course_material`` rows.
+
+    Guards against traversal: any resolved path that escapes the uploads root
+    (via ``..`` or an absolute path elsewhere) is rejected. Returns the safe
+    Path, or None if the file is missing or outside the root.
+    """
+    if not stored_path:
+        return None
+    try:
+        # Normalise separators so a Windows-style value resolves on POSIX too.
+        text = str(stored_path).replace("\\", "/").strip()
+        if not text:
+            return None
+
+        # A genuine absolute path already inside the uploads root (legacy
+        # `upload_course_material` rows) is used as-is. This must be tried
+        # BEFORE prefix-stripping, so a POSIX path such as
+        # /srv/app/backend/uploads/course_1/x.pdf is not mangled.
+        candidate = None
+        probe = Path(text)
+        if probe.is_absolute():
+            try:
+                resolved = probe.resolve()
+                resolved.relative_to(UPLOAD_DIR)
+                candidate = resolved
+            except (ValueError, OSError):
+                candidate = None
+
+        if candidate is None:
+            # URL-style or relative reference. Strip the "/uploads" prefix and
+            # any leading slashes so it is interpreted relative to UPLOAD_DIR
+            # rather than the filesystem root — the leading slash is what makes
+            # is_absolute() True on POSIX but False on Windows.
+            rel = text
+            lowered = rel.lower()
+            if lowered.startswith("/uploads/"):
+                rel = rel[len("/uploads/"):]
+            elif lowered.startswith("uploads/"):
+                rel = rel[len("uploads/"):]
+            rel = rel.lstrip("/")
+            if not rel:
+                return None
+            candidate = (UPLOAD_DIR / rel).resolve()
+            candidate.relative_to(UPLOAD_DIR)  # raises ValueError if outside
+    except (ValueError, OSError):
+        return None
+    return candidate if candidate.is_file() else None
+
+def _invalidate_rag_index() -> None:
+    """Drop the cached retrieval index after the material corpus changes.
+
+    Imported lazily to avoid a circular import (chatbot_routes imports nothing
+    from here, but the router registration order makes a top-level import
+    fragile). Failing to invalidate must never break the upload itself.
+    """
+    try:
+        from routes.chatbot_routes import reset_rag_index
+
+        reset_rag_index()
+    except Exception as e:  # pragma: no cover - defensive
+        print(f"[files] could not invalidate RAG index: {type(e).__name__}")
+
 
 # Allowed file types
 ALLOWED_EXTENSIONS = {".pdf", ".docx", ".doc", ".txt", ".pptx", ".xlsx"}
@@ -122,7 +196,7 @@ async def upload_course_material(
     
     # Create course folder
     course_folder = UPLOAD_DIR / f"course_{course_id}"
-    course_folder.mkdir(exist_ok=True)
+    course_folder.mkdir(parents=True, exist_ok=True)
     
     # Generate unique filename
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -151,7 +225,11 @@ async def upload_course_material(
     db.add(material)
     db.commit()
     db.refresh(material)
-    
+
+    # The retrieval index is process-cached; without this the new material is
+    # invisible to the chatbot until the server restarts.
+    _invalidate_rag_index()
+
     return {
         "message": "File uploaded successfully",
         "material_id": material.id,
@@ -169,15 +247,17 @@ def get_course_files(
 ):
     """Get all files for a course"""
     
-    # Check access (student enrolled or lecturer owns)
+    # Check access (actively enrolled student, or the lecturer who owns it).
     if current_user.role == "student":
         enrollment = db.query(models.Enrollment).filter(
             models.Enrollment.student_id == current_user.id,
-            models.Enrollment.course_id == course_id
+            models.Enrollment.course_id == course_id,
+            # A withdrawn enrollment row still exists; it must not grant access.
+            models.Enrollment.status != "withdrawn",
         ).first()
         if not enrollment:
             raise HTTPException(status_code=403, detail="Not enrolled in this course")
-    
+
     elif current_user.role == "lecturer":
         course = db.query(models.Course).filter(
             models.Course.id == course_id,
@@ -185,7 +265,11 @@ def get_course_files(
         ).first()
         if not course:
             raise HTTPException(status_code=403, detail="You don't teach this course")
-    
+
+    else:
+        # Deny by default: no role falls through to the material list unchecked.
+        raise HTTPException(status_code=403, detail="Access denied")
+
     # Get materials
     materials = db.query(models.CourseMaterial).filter(
         models.CourseMaterial.course_id == course_id
@@ -202,6 +286,50 @@ def get_course_files(
         }
         for m in materials
     ]
+
+
+@router.get("/{material_id}/download")
+def download_material(
+    material_id: int,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Download a course material file (enrolled students or owning lecturer only)."""
+
+    material = db.query(models.CourseMaterial).filter(
+        models.CourseMaterial.id == material_id
+    ).first()
+    if not material:
+        raise HTTPException(status_code=404, detail="Material not found")
+
+    # Access control: student must be enrolled; lecturer must own the course.
+    if current_user.role == "student":
+        enrollment = db.query(models.Enrollment).filter(
+            models.Enrollment.student_id == current_user.id,
+            models.Enrollment.course_id == material.course_id,
+            models.Enrollment.status != "withdrawn",
+        ).first()
+        if not enrollment:
+            raise HTTPException(status_code=403, detail="Not enrolled in this course")
+    elif current_user.role == "lecturer":
+        course = db.query(models.Course).filter(
+            models.Course.id == material.course_id,
+            models.Course.lecturer_id == current_user.id
+        ).first()
+        if not course:
+            raise HTTPException(status_code=403, detail="You don't teach this course")
+    else:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    safe_path = _resolve_within_uploads(material.file_url)
+    if not safe_path:
+        raise HTTPException(status_code=404, detail="File not found on server")
+
+    return FileResponse(
+        path=str(safe_path),
+        filename=safe_path.name,
+        media_type="application/octet-stream"
+    )
 
 
 @router.delete("/{material_id}")
@@ -228,15 +356,20 @@ def delete_material(
     if not course:
         raise HTTPException(status_code=403, detail="You don't own this material")
     
-    # Delete file from disk
-    if material.file_url and Path(material.file_url).exists():
+    # Delete file from disk (only if it resolves safely inside the uploads root)
+    safe_path = _resolve_within_uploads(material.file_url)
+    if safe_path:
         try:
-            Path(material.file_url).unlink()
-        except:
-            pass
-    
+            safe_path.unlink()
+        except OSError as e:
+            # Do not fail the request if the file is already gone; log for ops.
+            print(f"[files] failed to delete file for material {material_id}: {type(e).__name__}")
+
     # Delete from database
     db.delete(material)
     db.commit()
-    
+
+    # Drop the cached index so the chatbot stops citing deleted content.
+    _invalidate_rag_index()
+
     return {"message": "Material deleted"}

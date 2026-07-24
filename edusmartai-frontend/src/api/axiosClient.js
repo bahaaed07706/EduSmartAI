@@ -26,11 +26,29 @@ axiosClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Simple error logger
+// Response handling:
+//  - On 401 (expired/invalid token), clear auth and send the user to /login.
+//  - Network blips and expected 4xx are surfaced to the caller (which shows an
+//    error state) without spamming console.error on every request.
 axiosClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.error("API error:", error);
+    const status = error?.response?.status;
+
+    if (status === 401) {
+      try {
+        localStorage.removeItem("edusmart_auth");
+      } catch (e) {
+        /* ignore storage errors */
+      }
+      if (window.location.pathname !== "/login") {
+        window.location.assign("/login");
+      }
+    } else if (status >= 500) {
+      // Only log genuinely unexpected server errors.
+      console.error(`API ${status} error on ${error.config?.url}`);
+    }
+
     return Promise.reject(error);
   }
 );
