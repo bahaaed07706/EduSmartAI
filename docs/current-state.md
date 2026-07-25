@@ -9,7 +9,7 @@ PR #1 has been merged. Development is now on `main`.
 | | |
 |---|---|
 | Branch | `main` |
-| HEAD (local == remote) | `5faa757571a3a3886506540776036597a7ac7960` |
+| HEAD | latest on `main` (run `git rev-parse HEAD`; local == remote verified) |
 | Merge commit | `0639a12` (squash of `release/v1-hardening`) |
 | Pull request | https://github.com/bahaaed07706/EduSmartAI/pull/1 — **MERGED** |
 | Release | [v1.0.0](https://github.com/bahaaed07706/EduSmartAI/releases/tag/v1.0.0) → `0639a12` |
@@ -31,7 +31,7 @@ genuine RAG, ML evaluation, the design system, and the P0 security fixes.
 
 ## Verification results
 
-All re-run at `5faa757` on 2026-07-24.
+All re-run on `main`, 2026-07-24.
 
 | Gate | Result | Where |
 |---|---|---|
@@ -150,7 +150,7 @@ The backend is not yet deployed. In order:
 git fetch --all --prune
 git switch main
 git status                      # expect clean
-git rev-parse HEAD              # expect 5faa757...
+git rev-parse HEAD              # local == remote
 gh pr view 1                    # MERGED
 gh run list --branch main --limit 1
 

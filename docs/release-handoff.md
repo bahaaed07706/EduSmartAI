@@ -8,7 +8,7 @@ appear here, only variable names.
 | | |
 |---|---|
 | Branch | `main` (PR #1 merged) |
-| HEAD (local == remote) | `5faa757` |
+| HEAD | latest on `main` (local == remote) |
 | Pull request | https://github.com/bahaaed07706/EduSmartAI/pull/1 — **MERGED** |
 | Merge commit | `0639a12` |
 | CI | green on `main` — 103 tests, ruff clean, build compiles |
