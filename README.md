@@ -97,16 +97,24 @@ retrieval.
 
 ```mermaid
 flowchart LR
-    A[Lecturer uploads material] --> B[Text extraction<br/>PDF / DOCX / PPTX]
-    B --> C[Chunking<br/>500 chars, 100 overlap]
-    C --> D[TF-IDF index<br/>char n-grams 3-5]
-    E[Student question] --> F{Authorization mask}
+    subgraph index [Indexing &mdash; runs once, when a lecturer uploads material]
+        direction LR
+        A[Material<br/>PDF / DOCX / PPTX] --> B[Text extraction]
+        B --> C[Chunking<br/>500 chars, 100 overlap]
+        C --> D[(TF-IDF index<br/>char n-grams 3-5)]
+    end
+
+    subgraph query [Retrieval &amp; answer &mdash; runs on every student question]
+        direction LR
+        E[Student question] --> F{Authorization mask}
+        F -->|allowed courses only| H[Cosine ranking]
+        H --> I{Top score >= 0.25?}
+        I -->|no| J[Abstain:<br/>nothing invented]
+        I -->|yes| K[Grounded answer<br/>+ citations]
+    end
+
     G[(Enrolment<br/>in database)] --> F
-    F -->|allowed courses only| H[Cosine ranking]
     D --> H
-    H --> I{Score >= 0.25?}
-    I -->|no| J[Abstain:<br/>nothing invented]
-    I -->|yes| K[Grounded answer<br/>+ citations]
 ```
 
 Two details matter more than the ranking method.
@@ -311,7 +319,13 @@ and the models deserialised.
 | [security.md](docs/security.md) | Authorization model and audit findings |
 | [design-system.md](docs/design-system.md) | Tokens, components, accessibility rules |
 | [deployment-decision.md](docs/deployment-decision.md) | Why Render, and why not serverless |
+| [reproducibility.md](docs/reproducibility.md) | Exact commands to regenerate every number |
+| [evidence/public-claims-matrix.md](docs/evidence/public-claims-matrix.md) | Every public claim mapped to its evidence |
 | [current-state.md](docs/current-state.md) | Verified state, branch, blockers |
+
+Diagrams: [RAG pipeline](docs/diagrams/rag-pipeline.svg) ·
+[risk to support](docs/diagrams/risk-to-support.svg) ·
+[reproducibility workflow](docs/diagrams/reproducibility-workflow.svg).
 
 ## Honest limitations
 

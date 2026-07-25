@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 330" width="1180" height="330" font-family="ui-sans-serif,Segoe UI,Inter,Helvetica,Arial,sans-serif" role="img" aria-label="Reproducibility workflow: clone, install dependencies, create environment, migrate and seed synthetic data, run tests, reproduce RAG and ML evaluation, generate evidence, compare verified metrics">
+  <rect width="1180" height="330" rx="16" fill="#f8fafc"/>
+  <text x="40" y="46" font-size="22" font-weight="700" fill="#0f172a">Reproduce every verified number</text>
+  <text x="40" y="70" font-size="14" fill="#64748b">Each command exists in docs/reproducibility.md. Captured outputs live in docs/evidence/.</text>
+
+  <g font-size="13">
+    <!-- top row -->
+    <rect x="40" y="100" width="150" height="58" rx="10" fill="#eff6ff" stroke="#bfdbfe"/>
+    <text x="115" y="126" text-anchor="middle" font-weight="600" fill="#1e3a8a">Clone</text>
+    <text x="115" y="144" text-anchor="middle" fill="#475569" font-size="11">git clone</text>
+
+    <rect x="220" y="100" width="160" height="58" rx="10" fill="#eff6ff" stroke="#bfdbfe"/>
+    <text x="300" y="126" text-anchor="middle" font-weight="600" fill="#1e3a8a">Environment</text>
+    <text x="300" y="144" text-anchor="middle" fill="#475569" font-size="11">venv + deps + .env</text>
+
+    <rect x="410" y="100" width="200" height="58" rx="10" fill="#eef2ff" stroke="#c7d2fe"/>
+    <text x="510" y="126" text-anchor="middle" font-weight="600" fill="#3730a3">Migrate + synthetic seed</text>
+    <text x="510" y="144" text-anchor="middle" fill="#475569" font-size="11">migrate_schema.py · seed_data.py</text>
+
+    <rect x="640" y="100" width="150" height="58" rx="10" fill="#ecfdf5" stroke="#a7f3d0"/>
+    <text x="715" y="126" text-anchor="middle" font-weight="600" fill="#065f46">Backend tests</text>
+    <text x="715" y="144" text-anchor="middle" fill="#047857" font-size="11">103 passed</text>
+  </g>
+
+  <g stroke="#94a3b8" stroke-width="2" fill="none" marker-end="url(#a3)">
+    <path d="M190 129 H218"/>
+    <path d="M380 129 H408"/>
+    <path d="M610 129 H638"/>
+  </g>
+
+  <!-- down connector -->
+  <path d="M715 158 V186" stroke="#94a3b8" stroke-width="2" fill="none" marker-end="url(#a3)"/>
+
+  <g font-size="13">
+    <!-- bottom row -->
+    <rect x="640" y="188" width="150" height="58" rx="10" fill="#fffbeb" stroke="#fde68a"/>
+    <text x="715" y="214" text-anchor="middle" font-weight="600" fill="#92400e">RAG eval</text>
+    <text x="715" y="232" text-anchor="middle" fill="#a16207" font-size="11">P@1=recall@3=MRR=1.00</text>
+
+    <rect x="410" y="188" width="200" height="58" rx="10" fill="#fffbeb" stroke="#fde68a"/>
+    <text x="510" y="211" text-anchor="middle" font-weight="600" fill="#92400e">ML eval (read-only)</text>
+    <text x="510" y="229" text-anchor="middle" fill="#a16207" font-size="11">AXI 0.7917 · OULAD 0.9790*</text>
+
+    <rect x="220" y="188" width="160" height="58" rx="10" fill="#eff6ff" stroke="#bfdbfe"/>
+    <text x="300" y="211" text-anchor="middle" font-weight="600" fill="#1e3a8a">Evidence artifacts</text>
+    <text x="300" y="229" text-anchor="middle" fill="#475569" font-size="11">docs/evidence/*.json</text>
+
+    <rect x="40" y="188" width="150" height="58" rx="10" fill="#ecfdf5" stroke="#a7f3d0"/>
+    <text x="115" y="211" text-anchor="middle" font-weight="700" fill="#065f46">Compare</text>
+    <text x="115" y="229" text-anchor="middle" fill="#047857" font-size="11">metrics match</text>
+  </g>
+
+  <g stroke="#94a3b8" stroke-width="2" fill="none" marker-end="url(#a3)">
+    <path d="M638 217 H612"/>
+    <path d="M408 217 H382"/>
+    <path d="M218 217 H192"/>
+  </g>
+
+  <text x="410" y="285" font-size="12" fill="#a16207">* OULAD accuracy is inflated by target leakage — documented, not presented as early prediction.</text>
+  <text x="40" y="308" font-size="12" fill="#64748b">Frontend track (parallel): npm ci &#8594; CI=true npm run build &#8594; axe-core (0 violations) &#8594; responsive audit (0 issues).</text>
+
+  <defs>
+    <marker id="a3" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0 0 L7 3 L0 6 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+</svg>

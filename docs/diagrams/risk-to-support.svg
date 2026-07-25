@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 300" width="1180" height="300" font-family="ui-sans-serif,Segoe UI,Inter,Helvetica,Arial,sans-serif" role="img" aria-label="Product intelligence flow: attendance, grades and quizzes to feature engineering, risk signal, lecturer review, student support. Intervention tracking is not yet built.">
+  <rect width="1180" height="300" rx="16" fill="#f8fafc"/>
+  <text x="40" y="46" font-size="22" font-weight="700" fill="#0f172a">From signal to support</text>
+  <text x="40" y="70" font-size="14" fill="#64748b">The product surfaces a risk signal. The dashed stage — tracking what was done about it — is not yet built.</text>
+
+  <g font-size="13.5">
+    <rect x="40" y="110" width="180" height="90" rx="10" fill="#eff6ff" stroke="#bfdbfe"/>
+    <text x="130" y="150" text-anchor="middle" font-weight="600" fill="#1e3a8a">Attendance</text>
+    <text x="130" y="170" text-anchor="middle" font-weight="600" fill="#1e3a8a">Grades · Quizzes</text>
+
+    <rect x="270" y="110" width="170" height="90" rx="10" fill="#eef2ff" stroke="#c7d2fe"/>
+    <text x="355" y="150" text-anchor="middle" font-weight="600" fill="#3730a3">Feature</text>
+    <text x="355" y="170" text-anchor="middle" font-weight="600" fill="#3730a3">engineering</text>
+
+    <rect x="490" y="110" width="170" height="90" rx="10" fill="#fffbeb" stroke="#fde68a"/>
+    <text x="575" y="145" text-anchor="middle" font-weight="700" fill="#92400e">Risk signal</text>
+    <text x="575" y="166" text-anchor="middle" fill="#a16207" font-size="11.5">AXI model</text>
+    <text x="575" y="182" text-anchor="middle" fill="#a16207" font-size="11.5">(classification)</text>
+
+    <rect x="710" y="110" width="170" height="90" rx="10" fill="#eff6ff" stroke="#bfdbfe"/>
+    <text x="795" y="150" text-anchor="middle" font-weight="600" fill="#1e3a8a">Lecturer / admin</text>
+    <text x="795" y="170" text-anchor="middle" font-weight="600" fill="#1e3a8a">reviews the signal</text>
+
+    <rect x="930" y="110" width="170" height="90" rx="10" fill="#ecfdf5" stroke="#a7f3d0"/>
+    <text x="1015" y="150" text-anchor="middle" font-weight="700" fill="#065f46">Student</text>
+    <text x="1015" y="170" text-anchor="middle" font-weight="700" fill="#065f46">support</text>
+  </g>
+
+  <g stroke="#94a3b8" stroke-width="2" fill="none" marker-end="url(#a2)">
+    <path d="M220 155 H268"/>
+    <path d="M440 155 H488"/>
+    <path d="M660 155 H708"/>
+    <path d="M880 155 H928"/>
+  </g>
+
+  <!-- dashed future stage -->
+  <rect x="490" y="235" width="290" height="46" rx="10" fill="#fff" stroke="#cbd5e1" stroke-dasharray="6 5"/>
+  <text x="635" y="263" text-anchor="middle" font-weight="600" fill="#64748b" font-size="13">Outcome tracked &#8212; not yet built (roadmap)</text>
+  <path d="M1015 202 C 1015 235, 785 235, 782 235" stroke="#cbd5e1" stroke-width="2" fill="none" stroke-dasharray="6 5" marker-end="url(#a2)"/>
+
+  <defs>
+    <marker id="a2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0 0 L7 3 L0 6 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+</svg>

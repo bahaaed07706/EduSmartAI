@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 360" width="1180" height="360" font-family="ui-sans-serif,Segoe UI,Inter,Helvetica,Arial,sans-serif" role="img" aria-label="RAG pipeline: secure upload to extraction, chunking, authorized candidate filtering, ranking, threshold, grounding, citations, or abstention">
+  <rect width="1180" height="360" rx="16" fill="#f8fafc"/>
+  <text x="40" y="46" font-size="22" font-weight="700" fill="#0f172a">Retrieval pipeline</text>
+  <text x="40" y="70" font-size="14" fill="#64748b">Lexical TF-IDF over character n-grams. The authorization mask is applied before ranking — not after.</text>
+
+  <!-- ingestion row -->
+  <g font-size="13.5">
+    <rect x="40" y="100" width="150" height="60" rx="10" fill="#eff6ff" stroke="#bfdbfe"/>
+    <text x="115" y="126" text-anchor="middle" font-weight="600" fill="#1e3a8a">Secure upload</text>
+    <text x="115" y="145" text-anchor="middle" fill="#475569" font-size="11.5">lecturer, own course</text>
+
+    <rect x="220" y="100" width="150" height="60" rx="10" fill="#eff6ff" stroke="#bfdbfe"/>
+    <text x="295" y="126" text-anchor="middle" font-weight="600" fill="#1e3a8a">Text extraction</text>
+    <text x="295" y="145" text-anchor="middle" fill="#475569" font-size="11.5">PDF / DOCX / PPTX</text>
+
+    <rect x="400" y="100" width="150" height="60" rx="10" fill="#eff6ff" stroke="#bfdbfe"/>
+    <text x="475" y="126" text-anchor="middle" font-weight="600" fill="#1e3a8a">Chunking</text>
+    <text x="475" y="145" text-anchor="middle" fill="#475569" font-size="11.5">500 chars, 100 overlap</text>
+
+    <rect x="580" y="100" width="150" height="60" rx="10" fill="#eff6ff" stroke="#bfdbfe"/>
+    <text x="655" y="126" text-anchor="middle" font-weight="600" fill="#1e3a8a">TF-IDF index</text>
+    <text x="655" y="145" text-anchor="middle" fill="#475569" font-size="11.5">char_wb (3,5)</text>
+  </g>
+
+  <!-- arrows ingestion -->
+  <g stroke="#94a3b8" stroke-width="2" fill="none" marker-end="url(#ah)">
+    <path d="M190 130 H218"/>
+    <path d="M370 130 H398"/>
+    <path d="M550 130 H578"/>
+  </g>
+
+  <!-- query + auth -->
+  <rect x="40" y="210" width="150" height="60" rx="10" fill="#fff" stroke="#cbd5e1"/>
+  <text x="115" y="236" text-anchor="middle" font-weight="600" fill="#0f172a" font-size="13.5">Student question</text>
+  <text x="115" y="255" text-anchor="middle" fill="#475569" font-size="11.5">AR or EN</text>
+
+  <rect x="220" y="200" width="180" height="80" rx="10" fill="#fef2f2" stroke="#fecaca"/>
+  <text x="310" y="228" text-anchor="middle" font-weight="700" fill="#991b1b" font-size="13.5">Authorization mask</text>
+  <text x="310" y="247" text-anchor="middle" fill="#7f1d1d" font-size="11.5">allowed courses only,</text>
+  <text x="310" y="263" text-anchor="middle" fill="#7f1d1d" font-size="11.5">from the database</text>
+
+  <rect x="430" y="210" width="150" height="60" rx="10" fill="#eef2ff" stroke="#c7d2fe"/>
+  <text x="505" y="236" text-anchor="middle" font-weight="600" fill="#3730a3" font-size="13.5">Cosine ranking</text>
+  <text x="505" y="255" text-anchor="middle" fill="#475569" font-size="11.5">candidates only</text>
+
+  <!-- threshold decision -->
+  <path d="M690 240 l45 -32 l45 32 l-45 32 z" fill="#fffbeb" stroke="#fde68a"/>
+  <text x="735" y="236" text-anchor="middle" font-weight="700" fill="#92400e" font-size="12.5">score</text>
+  <text x="735" y="252" text-anchor="middle" font-weight="700" fill="#92400e" font-size="12.5">&#8805; 0.25 ?</text>
+
+  <!-- outcomes -->
+  <rect x="850" y="120" width="290" height="70" rx="10" fill="#ecfdf5" stroke="#a7f3d0"/>
+  <text x="995" y="148" text-anchor="middle" font-weight="700" fill="#065f46" font-size="14">Grounded answer + citations</text>
+  <text x="995" y="169" text-anchor="middle" fill="#047857" font-size="11.5">source titles, course context; provider or local fallback</text>
+
+  <rect x="850" y="250" width="290" height="60" rx="10" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="995" y="277" text-anchor="middle" font-weight="700" fill="#334155" font-size="14">Abstain</text>
+  <text x="995" y="296" text-anchor="middle" fill="#475569" font-size="11.5">nothing invented when evidence is weak</text>
+
+  <!-- arrows bottom -->
+  <g stroke="#94a3b8" stroke-width="2" fill="none" marker-end="url(#ah)">
+    <path d="M190 240 H218"/>
+    <path d="M400 240 H428"/>
+    <path d="M580 240 H688"/>
+    <path d="M655 160 V196 H310 V198" stroke="#bfdbfe"/>
+  </g>
+  <g stroke="#94a3b8" stroke-width="2" fill="none">
+    <path d="M780 224 C 820 190, 830 165, 848 158" marker-end="url(#ah)"/>
+    <path d="M780 256 C 820 285, 830 285, 848 282" marker-end="url(#ah)"/>
+  </g>
+  <text x="812" y="196" font-size="11" fill="#16a34a" font-weight="600">yes</text>
+  <text x="812" y="300" font-size="11" fill="#64748b" font-weight="600">no</text>
+
+  <defs>
+    <marker id="ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0 0 L7 3 L0 6 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+</svg>

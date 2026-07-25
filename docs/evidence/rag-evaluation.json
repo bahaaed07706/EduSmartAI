@@ -1,0 +1,33 @@
+{
+  "artifact": "rag-evaluation",
+  "generated_from": "backend/tests/test_rag_evaluation.py",
+  "reproduce": "cd backend && python -m pytest tests/test_rag_evaluation.py -q -s",
+  "method": {
+    "retrieval": "TF-IDF over character n-grams (char_wb, 3-5), cosine ranking",
+    "authorization": "allowlist applied as a mask BEFORE scoring; derived from enrolment/ownership in the database",
+    "abstention_threshold": 0.25,
+    "note": "Lexical retrieval, not dense/semantic embeddings."
+  },
+  "retrieval_quality": {
+    "n_labelled_queries": 12,
+    "precision_at_1": 1.00,
+    "recall_at_3": 1.00,
+    "mrr": 1.00,
+    "honest_reading": "n=12 is enough to demonstrate the mechanism works, not to claim production-scale retrieval quality. The abstention threshold was calibrated on this same set, so it is not independently validated."
+  },
+  "behavioural_tests": {
+    "abstains_on_off_topic": true,
+    "cross_course_isolation": true,
+    "cross_user_isolation": true,
+    "citations_returned": true,
+    "groundedness_checked": true,
+    "prompt_injection_contained": true,
+    "arabic_and_english_queries": true,
+    "provider_fallback_when_no_key": true
+  },
+  "test_summary": "15 tests passed in the RAG evaluation module (retrieval quality + behavioural boundaries).",
+  "limitations": [
+    "Live LLM answer quality is unverified: no Groq API key has been available, so only the retrieval layer and the local fallback are exercised.",
+    "The evaluation corpus is small (12 queries, 6 seeded course materials)."
+  ]
+}
