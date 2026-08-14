@@ -316,6 +316,65 @@ REACT_APP_API_BASE_URL=http://127.0.0.1:8000 npm start
 Health checks: `/health` for liveness, `/ready` to confirm the database responds
 and the models deserialised.
 
+## Demo accounts
+
+The seeded dataset is entirely synthetic — invented names, invented grades. No
+real student appears anywhere in this repository.
+
+| Role | Email | What it shows |
+|---|---|---|
+| Student | `ahmed@edu.com` | Own courses, grades, attendance, risk signal, chatbot |
+| Lecturer | `dr.salem@edu.com` | Assigned courses, attendance and grade entry, materials, quizzes |
+| Admin | `admin@edu.com` | Departments, semesters, users, courses, enrolments |
+
+Passwords are not printed here, so this file cannot drift from whatever a given
+deployment was seeded with. On a deployment that sets the `REACT_APP_DEMO_*`
+variables, the student and lecturer sign-in details are shown on the login
+screen itself. The admin account is deliberately never published — assessing the
+project does not need destructive access.
+
+> These accounts exist for evaluation only. On the free-tier demo the database is
+> rebuilt on every boot, so anything you change is discarded when the service
+> restarts, and uploaded files do not survive either.
+
+## How a request is authenticated
+
+Ownership is resolved from the database on every request, never from anything the
+client sends. The token carries only an identity claim; what that identity is
+allowed to read is looked up server-side each time.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant B as Browser<br/>LoginPage.jsx
+    participant API as FastAPI<br/>main.py
+    participant AUTH as routes/auth_routes.py
+    participant DB as SQLAlchemy<br/>models.User
+    participant R as routes/student_routes.py
+
+    B->>API: POST /api/v1/auth/login
+    API->>AUTH: LoginRequest (schemas.py)
+    AUTH->>DB: SELECT user WHERE email = ?
+    DB-->>AUTH: user + password_hash
+    AUTH->>AUTH: verify_password() — passlib sha256_crypt
+    alt bad credentials
+        AUTH-->>B: 401 "Invalid email or password"
+    else deactivated account
+        AUTH-->>B: 403 "Account is deactivated"
+    else valid
+        AUTH->>AUTH: create_access_token({sub, role})
+        AUTH-->>B: 200 TokenResponse + user
+        B->>R: GET /api/v1/student/... (Bearer token)
+        R->>DB: resolve enrolment for this user id
+        DB-->>R: only rows this student owns
+        R-->>B: 200 dashboard data
+    end
+```
+
+The `is_active` check sits after password verification on purpose: answering
+"that account is deactivated" before checking the password would confirm the
+address exists to anyone who guesses it.
+
 ## Documentation
 
 | Document | What it covers |
