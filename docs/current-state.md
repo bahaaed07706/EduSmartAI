@@ -1,19 +1,19 @@
 # EduSmartAI — current state
 
-Last verified: 2026-07-24 (post-merge, post-release)
+Last verified: 2026-08-14 (post-merge of PR #2)
 
 ## Branch and SHA
 
-PR #1 has been merged. Development is now on `main`.
+PR #2 has been merged. Development is on `main`.
 
 | | |
 |---|---|
 | Branch | `main` |
 | HEAD | latest on `main` (run `git rev-parse HEAD`; local == remote verified) |
-| Merge commit | `0639a12` (squash of `release/v1-hardening`) |
-| Pull request | https://github.com/bahaaed07706/EduSmartAI/pull/1 — **MERGED** |
+| Latest merge | PR #2 — free-tier deployment and the demo-seed switch |
+| Earlier merge | `0639a12` (squash of `release/v1-hardening`, PR #1) |
 | Release | [v1.0.0](https://github.com/bahaaed07706/EduSmartAI/releases/tag/v1.0.0) → `0639a12` |
-| CI | **green** on `main` |
+| CI | **green** on `main` — ubuntu and windows |
 | Working tree | clean |
 
 ## Commit history (most recent first)
@@ -31,11 +31,13 @@ genuine RAG, ML evaluation, the design system, and the P0 security fixes.
 
 ## Verification results
 
-All re-run on `main`, 2026-07-24.
+All re-run on `main`, 2026-08-14.
 
 | Gate | Result | Where |
 |---|---|---|
-| Backend tests | **103 passed** | locally (Windows) and CI (ubuntu-latest) |
+| Backend tests | **124 passed** (103 + 21 demo-seed gating) | CI on ubuntu **and** windows; locally in a venv built from `requirements.txt` alone |
+| Coverage | **61.81%**, gate 60% (`backend/.coveragerc`) | CI (ubuntu) |
+| mypy | 180 errors, **non-blocking** — almost all SQLAlchemy `Column[...]` false positives | CI, report only |
 | ruff | clean | local + CI |
 | Production build | compiles, ~218 kB gzip | local + CI |
 | axe-core | 0 violations, 6 pages × 3 viewports | local, `scripts/a11y-audit.js` |
@@ -44,8 +46,11 @@ All re-run on `main`, 2026-07-24.
 | Secret scan | clean; no `.env`, `.db`, uploads or backups tracked | local |
 | Migration idempotency | verified fresh + twice on a DB copy, row counts preserved | local |
 | Frontend deploy | **live** — https://edusmartai-frontend.vercel.app (Vercel, production, Ready) | Vercel API |
-| Backend deploy | **pending** — Render not yet provisioned | — |
-| Row counts | unchanged: users=14, courses=4, enrollments=40, grades=240, attendances=560 | local |
+| Backend deploy | **pending** — the blueprint is free-tier and the boot sequence is rehearsed, but the Render service has not been created | — |
+| Boot sequence | migrate → seed → uvicorn, all exit 0; `/ready` = `{"database":true,"models":true}`; `/docs` 404 in production; student and lecturer logins HTTP 200 | local rehearsal against a clean tree |
+| Demo dataset | deterministic across resets: 14 users, 4 courses, 26 enrollments, 3 departments, 0 students missing a department | local rehearsal |
+| Backend memory | 205.8 MB RSS, 214.3 MB peak — fits a 512 MB free instance | local rehearsal |
+| Row counts | local development DB unchanged: users=14, courses=4, enrollments=40, grades=240, attendances=560 | local |
 
 The Linux test run matters specifically: it is what proves the file-path fix,
 which was previously masked by a test that asserted the failure.
