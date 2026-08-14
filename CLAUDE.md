@@ -10,12 +10,17 @@ carries the branch, remote SHA, commit list, review dispositions, verification
 results, blockers, and the exact next task. This file holds the durable rules;
 that file holds the changing facts.
 
-At the last verification (2026-07-24):
-- Branch `release/v1-hardening`, HEAD == remote == `abf747c`, tree clean.
-- PR #1 open to `main`, **CI green**, not merged.
-- 94 backend tests pass on Windows *and* ubuntu-latest; ruff clean; build compiles.
-- All 10 code-review findings fixed in `0f567e6`.
-- Deployment decided (Render) in `docs/deployment-decision.md`, **not executed**.
+At the last verification (2026-08-14):
+- Branch `main`, HEAD == remote, tree clean. PR #1 and PR #2 both **merged**.
+- **CI green on `main`**, now a matrix of ubuntu-latest *and* windows-latest.
+- **124 backend tests pass**; ruff clean; coverage 61.81% against a 60% gate;
+  mypy runs report-only (180 baseline errors, mostly SQLAlchemy false positives).
+- `render.yaml` targets Render's **free tier** — no disk, no managed Postgres,
+  ephemeral SQLite, and the demo dataset rebuilt on every boot.
+- Boot sequence rehearsed end to end locally: migrate → seed → uvicorn,
+  `/ready` green, real student and lecturer logins returning 200.
+- Backend still **not deployed** — creating the Render service is a dashboard
+  action that has not been taken.
 
 ### Compact instructions
 
@@ -87,7 +92,13 @@ Core value: early academic-risk signals (ML) + a context-grounded academic chatb
 ## 5. Data-preservation rules (HARD CONSTRAINTS)
 - **NEVER** delete or overwrite `backend/edusmart.db`, `Saved_Models/*`, `backend/uploads/*`,
   training data, or historical records.
-- **NEVER** re-seed over the live DB. `seed_data.py` is for fresh setups only.
+- **NEVER** re-seed over the live DB. `seed_all()` is for fresh setups only.
+  The one exception is `reset_demo_data()`, which drops every table to rebuild
+  the public demo and runs **only** when `DEMO_RESET_ON_BOOT` is explicitly set.
+  That switch must stay independent of `ENVIRONMENT`: the demo needs
+  `ENVIRONMENT=production` for its security posture, so tying them together
+  would force a choice between a seeded demo and a hardened one.
+  `backend/tests/test_demo_seed_gating.py` holds that line.
 - Any schema change: back up first, test twice on a copy, verify idempotency,
   verify row counts + IDs unchanged. Migrations are additive only (no DROP).
 - User-facing deletes must be soft (archive/deactivate) or blocked when history exists.
