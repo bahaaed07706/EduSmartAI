@@ -10,6 +10,7 @@ into one record per student — with a risk signal from a trained model and an
 assistant grounded in each student's own course material.
 
 [![Live frontend](https://img.shields.io/badge/Live_frontend-Vercel-000?logo=vercel)](https://edusmartai-frontend.vercel.app)
+&nbsp;[![Live API](https://img.shields.io/badge/Live_API-Render-46E3B7?logo=render&logoColor=000)](https://edusmartai-api.onrender.com/health)
 &nbsp;[![Documentation](https://img.shields.io/badge/Documentation-docs-1d4ed8)](#documentation)
 &nbsp;[![Architecture](https://img.shields.io/badge/Architecture-diagram-0ea5e9)](#architecture)
 
@@ -24,18 +25,18 @@ assistant grounded in each student's own course material.
 
 </div>
 
-> **Deployment status:** the frontend is live on Vercel; the backend is not yet
-> provisioned, so the public URL currently renders the interface but cannot log
-> in. Run it locally in a few minutes with the [Quick start](#quick-start), or
-> follow [deployment](docs/deployment-decision.md) for the hosting plan.
+> **Deployment status:** both halves are live. The API runs on Render at
+> [`edusmartai-api.onrender.com`](https://edusmartai-api.onrender.com/health) and
+> the interface on Vercel at
+> [`edusmartai-frontend.vercel.app`](https://edusmartai-frontend.vercel.app).
 >
-> `render.yaml` now targets Render's free tier and needs no paid plan: one
-> Blueprint deploy brings up the API, rebuilds a deterministic demo dataset on
-> every boot, and shows sign-in details for a student and a lecturer on the
-> login screen. Steps and variables are in
-> [release-handoff.md](docs/release-handoff.md). Being free costs a cold start
-> of about a minute after idle, and anything a visitor changes is discarded when
-> the service restarts.
+> Both run on free plans, which is visible in two ways: the **first request after
+> ~15 minutes idle takes about a minute** while the service wakes and
+> deserialises the model, and the database is rebuilt on every boot — so anything
+> you change, and any file you upload, is discarded when the service restarts.
+> That reset is deliberate, not a defect: every visitor starts from the same
+> clean dataset. Details and the durable-deployment upgrade path are in
+> [release-handoff.md](docs/release-handoff.md).
 
 ---
 
@@ -316,6 +317,42 @@ REACT_APP_API_BASE_URL=http://127.0.0.1:8000 npm start
 Health checks: `/health` for liveness, `/ready` to confirm the database responds
 and the models deserialised.
 
+## How a deploy boots
+
+Every push to `main` that Render picks up runs the same three commands, in this
+order, before a single request is served. The order is not cosmetic — two of
+these steps were in the wrong place until the sequence was actually run.
+
+```mermaid
+flowchart TB
+    A[Render Blueprint<br/>render.yaml, free plan] --> B[Build<br/>pip install -r requirements.txt]
+    B --> C[migrate_schema.py<br/>create tables, additive ALTERs]
+    C --> D{seed_boot.py<br/>DEMO_RESET_ON_BOOT set?}
+    D -->|no| G[uvicorn main:app<br/>existing data untouched]
+    D -->|yes| E[Validate SEED_* passwords<br/>before anything is dropped]
+    E --> F[reset_demo_data<br/>drop, reseed, then re-migrate]
+    F --> G
+    G --> H[Model load<br/>14.3 MB RandomForest, ~206 MB RSS]
+    H --> I[/ready<br/>database: true, models: true/]
+```
+
+Two details that only surfaced by running it:
+
+**Credentials are validated before the drop.** A missing `SEED_*_PASSWORD`
+discovered *after* the tables were gone would leave the service with an empty
+database and no way to refill it.
+
+**The migration runs again after seeding.** Departments, semesters and their
+foreign keys are backfilled onto rows that already exist — running it only
+before the seed left every student with a `NULL` department.
+
+The reset switch is deliberately independent of `ENVIRONMENT`. The demo needs
+`ENVIRONMENT=production` for its security posture (no API docs, HSTS,
+exact-origin CORS) *and* a rebuilt dataset; tying both to one variable would
+force a choice between a seeded demo and a hardened one.
+[`test_demo_seed_gating.py`](backend/tests/test_demo_seed_gating.py) holds that
+line.
+
 ## Demo accounts
 
 The seeded dataset is entirely synthetic — invented names, invented grades. No
@@ -396,13 +433,14 @@ Diagrams: [RAG pipeline](docs/diagrams/rag-pipeline.svg) ·
 
 ## Honest limitations
 
-- **The backend is not yet deployed.** The blueprint targets Render's free tier
-  and the full boot sequence has been rehearsed locally — migrate, seed, serve,
-  `/ready` green, real logins working — but creating the service is a dashboard
-  action nobody has taken yet.
+- **The demo sleeps.** On the free plan the API spins down after ~15 minutes
+  idle, so the first request afterwards takes about a minute. It is not broken;
+  it is waking up and deserialising a 14.3 MB model.
 - **The free-tier demo is not durable.** Uploads and any changes a visitor makes
   are discarded on restart, by design: the dataset is rebuilt on every boot so
-  each visitor starts from the same clean state.
+  each visitor starts from the same clean state. Nothing here is suitable for
+  real student records without the durable-deployment changes in
+  [release-handoff.md](docs/release-handoff.md).
 - **OULAD accuracy is leakage-inflated** and unusable for early prediction.
 - **LLM answer quality is unverified** — no API key has been available. Only the
   retrieval layer and the local fallback are tested.
