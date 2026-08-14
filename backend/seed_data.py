@@ -18,6 +18,11 @@ import os
 import random
 
 
+# Any fixed value works; it exists so the demo rebuild is reproducible rather
+# than to make the data look a particular way.
+_DEMO_RANDOM_SEED = 20260814
+
+
 class SeedConfigError(RuntimeError):
     """Raised when seed credentials are not supplied via the environment."""
 
@@ -484,6 +489,43 @@ def seed_all():
         raise
     finally:
         db.close()
+
+
+def reset_demo_data():
+    """Drop every table, recreate the schema, and reseed synthetic demo data.
+
+    Destructive by design, and used only by the public demo deployment, where
+    every boot must hand the next visitor the same clean dataset regardless of
+    what the previous one changed. `seed_all()` stays the additive path for a
+    database whose contents matter; this is not a substitute for it.
+
+    Credentials are validated *before* anything is dropped. Discovering a
+    missing SEED_*_PASSWORD after the tables were gone would leave the service
+    with an empty database and no way to refill it.
+    """
+    import migrate_schema
+    from database import DATABASE_URL, engine
+
+    for role in ("admin", "lecturer", "student"):
+        _seed_password(role)
+
+    print("♻️  Resetting demo data — dropping every table...")
+    models.Base.metadata.drop_all(bind=engine)
+    models.Base.metadata.create_all(bind=engine)
+
+    # Fix the dataset so every boot rebuilds the *same* demo. seed_all() picks
+    # each student's courses with `random`, so an unseeded run would hand every
+    # visitor a differently-shaped dataset and make the documented row counts
+    # untrue the moment the service restarted.
+    random.seed(_DEMO_RANDOM_SEED)
+
+    seed_all()
+
+    # Departments, semesters and the FK links between them and users live in
+    # the migration, not in seed_all(). It backfills *existing* rows, so it has
+    # to run after seeding — running it before (as the deployed start command
+    # does) leaves every seeded student with a NULL department.
+    migrate_schema.run(DATABASE_URL)
 
 
 if __name__ == "__main__":

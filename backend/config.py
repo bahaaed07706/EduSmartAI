@@ -40,6 +40,27 @@ if JWT_SECRET.strip() in _INSECURE_JWT_SECRETS or len(JWT_SECRET.strip()) < _MIN
 # ============ CORS ============
 CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
 
+# ============ Demo mode ============
+_TRUTHY = {"1", "true", "yes", "on"}
+
+
+def demo_reset_on_boot() -> bool:
+    """Whether the boot sequence should wipe and reseed synthetic demo data.
+
+    Deliberately a separate switch from ENVIRONMENT. The public demo runs with
+    ENVIRONMENT=production because that is what disables the API docs, enforces
+    an exact CORS origin and turns on HSTS — security settings the demo must
+    keep. Deriving the seed decision from that same variable would force a
+    choice between a working demo and a hardened one, so the two are kept
+    independent and each is set explicitly.
+
+    Defaults to off. Wiping data is destructive and must never be something a
+    deployment falls into by inheriting an unrelated setting; it has to be
+    asked for by name. Read at call time so the value is never baked in at
+    import.
+    """
+    return os.getenv("DEMO_RESET_ON_BOOT", "").strip().lower() in _TRUTHY
+
 # ============ Uploads ============
 # Single source of truth for where user files live. On a platform deployment
 # this points at a mounted persistent disk (e.g. /var/data/uploads); the
