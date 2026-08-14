@@ -1,0 +1,20 @@
+[run]
+source = .
+omit =
+    tests/*
+    venv/*
+    # Both are exercised by tests/test_demo_seed_gating.py, but only through a
+    # real subprocess — that is the point of those tests, since the boot
+    # sequence is what is being verified. Coverage's tracer does not follow a
+    # child process, so counting these files would report 0% for code that is
+    # in fact tested, and drag the gate down for the wrong reason.
+    seed_data.py
+    seed_boot.py
+
+[report]
+# Set at the measured baseline (62% at the time of writing) minus a small
+# margin, so the gate catches regressions without failing on noise. Raise it
+# when coverage genuinely improves; do not lower it to make a red build pass.
+fail_under = 60
+precision = 0
+show_missing = true
