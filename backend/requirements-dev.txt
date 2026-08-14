@@ -1,0 +1,11 @@
+# Development and CI tooling. Not needed to run the application — install it
+# alongside requirements.txt when working on the code:
+#
+#   pip install -r requirements.txt -r requirements-dev.txt
+#
+# Pinned for the same reason the runtime pins are: an unpinned linter or type
+# checker turns "someone released a new version" into a red build on a commit
+# that changed nothing.
+ruff==0.16.3
+mypy==2.3.0
+pytest-cov==7.1.0

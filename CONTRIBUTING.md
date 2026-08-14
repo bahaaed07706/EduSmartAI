@@ -26,16 +26,34 @@ See the Quick start in [README.md](README.md).
 
 ## Running the checks
 
+The lint, type-check and coverage tooling lives in `backend/requirements-dev.txt`,
+pinned so a new release of a linter cannot turn a green commit red on its own:
+
 ```bash
-# Backend: tests and lint
 cd backend
-python -m pytest -q
+pip install -r requirements.txt -r requirements-dev.txt
+```
+
+```bash
+# Backend: lint, tests, coverage gate
+cd backend
 python -m ruff check .
+python -m pytest -q --cov --cov-report=term
 
 # Frontend: production build
 cd edusmartai-frontend
 CI=true npm run build
 ```
+
+The coverage gate is configured in `backend/.coveragerc` and currently sits at
+60% against a measured 62%. If a change drops below it, add the missing test —
+lowering the threshold to go green is the one fix that is not allowed.
+
+`mypy` runs in CI but does not gate, and neither should it locally yet: the
+baseline is ~180 errors, almost entirely SQLAlchemy `Column[...]` false
+positives from the legacy declarative style. Clearing them means re-annotating
+the ORM with `Mapped[...]`. Useful work, welcome as its own change — just do not
+expect a clean run today.
 
 Accessibility and responsive audits need both servers running and credentials in
 the environment — copy `scripts/.env.a11y.example` and fill it in locally:
@@ -54,7 +72,15 @@ withdrawn. Anything with student history attached must refuse deletion with a
 409 rather than dropping rows. This is not negotiable — the whole product
 premise is that records survive.
 
-**Re-seeding over an existing database.** `seed_data.py` is for fresh setups.
+**Re-seeding over an existing database.** `seed_all()` is for fresh setups.
+
+There is exactly one exception, and it is deliberately hard to trigger:
+`reset_demo_data()` drops every table and rebuilds the synthetic dataset for the
+public demo, and it runs only when `DEMO_RESET_ON_BOOT` is explicitly set. Do not
+widen that switch, and in particular do not derive it from `ENVIRONMENT` — the
+demo needs `ENVIRONMENT=production` for its security posture, so tying the two
+together would mean choosing between a seeded demo and a hardened one.
+`backend/tests/test_demo_seed_gating.py` holds that line.
 
 **A destructive migration.** Additive only: `ALTER TABLE ADD COLUMN`. Test twice
 on a copy and verify row counts before and after.
