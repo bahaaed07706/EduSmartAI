@@ -28,6 +28,14 @@ assistant grounded in each student's own course material.
 > provisioned, so the public URL currently renders the interface but cannot log
 > in. Run it locally in a few minutes with the [Quick start](#quick-start), or
 > follow [deployment](docs/deployment-decision.md) for the hosting plan.
+>
+> `render.yaml` now targets Render's free tier and needs no paid plan: one
+> Blueprint deploy brings up the API, rebuilds a deterministic demo dataset on
+> every boot, and shows sign-in details for a student and a lecturer on the
+> login screen. Steps and variables are in
+> [release-handoff.md](docs/release-handoff.md). Being free costs a cold start
+> of about a minute after idle, and anything a visitor changes is discarded when
+> the service restarts.
 
 ---
 
@@ -329,8 +337,13 @@ Diagrams: [RAG pipeline](docs/diagrams/rag-pipeline.svg) ·
 
 ## Honest limitations
 
-- **Not yet deployed.** Architecture decided, configuration written, execution
-  pending.
+- **The backend is not yet deployed.** The blueprint targets Render's free tier
+  and the full boot sequence has been rehearsed locally — migrate, seed, serve,
+  `/ready` green, real logins working — but creating the service is a dashboard
+  action nobody has taken yet.
+- **The free-tier demo is not durable.** Uploads and any changes a visitor makes
+  are discarded on restart, by design: the dataset is rebuilt on every boot so
+  each visitor starts from the same clean state.
 - **OULAD accuracy is leakage-inflated** and unusable for early prediction.
 - **LLM answer quality is unverified** — no API key has been available. Only the
   retrieval layer and the local fallback are tested.
