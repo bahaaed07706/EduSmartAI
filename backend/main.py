@@ -160,7 +160,16 @@ app.include_router(skeleton_routes.router, prefix="/api/v1")
 
 @app.get("/")
 def root():
-    return {"message": "EduSmartAI Backend is running!", "docs": "/docs"}
+    """Service banner.
+
+    `docs` is omitted in production rather than hardcoded: the interactive docs
+    are disabled there (see `docs_url` above), so advertising `/docs`
+    unconditionally pointed callers at a 404 on the deployed service.
+    """
+    body = {"message": "EduSmartAI Backend is running!"}
+    if not IS_PRODUCTION:
+        body["docs"] = "/docs"
+    return body
 
 
 @app.get("/health")

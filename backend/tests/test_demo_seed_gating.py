@@ -165,6 +165,47 @@ def test_production_still_hardens_while_demo_seeding_is_enabled(monkeypatch):
         importlib.reload(main)
 
 
+def test_root_does_not_advertise_docs_in_production(monkeypatch):
+    """The banner must not point callers at an endpoint production disables."""
+    monkeypatch.setenv("ENVIRONMENT", "production")
+
+    import importlib
+
+    import main
+
+    monkeypatch.setattr(main, "CORS_ORIGINS", ["https://demo.example.app"])
+    reloaded = importlib.reload(main)
+    try:
+        from fastapi.testclient import TestClient
+
+        with TestClient(reloaded.app) as client:
+            body = client.get("/").json()
+        assert "docs" not in body
+        assert reloaded.app.docs_url is None
+    finally:
+        monkeypatch.undo()
+        importlib.reload(main)
+
+
+def test_root_advertises_docs_outside_production(monkeypatch):
+    monkeypatch.setenv("ENVIRONMENT", "development")
+
+    import importlib
+
+    import main
+
+    reloaded = importlib.reload(main)
+    try:
+        from fastapi.testclient import TestClient
+
+        with TestClient(reloaded.app) as client:
+            body = client.get("/").json()
+        assert body["docs"] == "/docs"
+    finally:
+        monkeypatch.undo()
+        importlib.reload(main)
+
+
 def test_production_refuses_wildcard_cors_even_with_seeding_on(monkeypatch):
     """Enabling the demo must not become a way to relax the CORS guard."""
     monkeypatch.setenv("ENVIRONMENT", "production")
